@@ -4,6 +4,7 @@
 use crate::yabai::config::check_config_path_exists;
 
 pub mod cli;
+mod dry_mode;
 mod initialize_panic_handler;
 mod macros;
 mod task;

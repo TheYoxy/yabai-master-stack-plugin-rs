@@ -1,9 +1,10 @@
 use std::fmt::{Debug, Formatter};
 
 use color_eyre::{eyre::bail, owo_colors::OwoColorize};
-use log::trace;
+use log::{trace, warn};
 
 use crate::{
+  dry_mode::is_dry_mode,
   task::lock::is_locked,
   yabai::{
     commands::{get_yabai_command, RunCommand},
@@ -136,51 +137,90 @@ where
 }
 
 pub fn focus_window(window: &Window) -> color_eyre::Result<()> {
-  trace!("focusing window: {:?}", window);
-  get_yabai_command()?.args(["-m", "window", "--focus", window.id.to_string().as_str()]).run_command()
+  trace!("focusing window: {window}");
+  if is_dry_mode() {
+    warn!("skipping focus window {window}");
+    Ok(())
+  } else {
+    get_yabai_command()?.args(["-m", "window", "--focus", window.id.to_string().as_str()]).run_command()
+  }
 }
 
 pub fn focus_display(display: &Display) -> color_eyre::Result<()> {
-  trace!("focusing display: {}", display);
-  get_yabai_command()?.args(["-m", "display", "--focus", display.index.to_string().as_str()]).run_command()
+  trace!("focusing display: {display}");
+  if is_dry_mode() {
+    warn!("skipping focus display {display}");
+    Ok(())
+  } else {
+    get_yabai_command()?.args(["-m", "display", "--focus", display.index.to_string().as_str()]).run_command()
+  }
 }
 
 pub fn move_window_to_display(display: &Display) -> color_eyre::Result<()> {
-  trace!("moving current window to display: {}", display);
-  get_yabai_command()?.args(["-m", "window", "--display", display.index.to_string().as_str()]).run_command()
+  trace!("moving current window to display: {display}");
+  if is_dry_mode() {
+    warn!("skipping move window to display {display}");
+    Ok(())
+  } else {
+    get_yabai_command()?.args(["-m", "window", "--display", display.index.to_string().as_str()]).run_command()
+  }
 }
 
 pub fn focus_direction<T>(direction: &T) -> color_eyre::Result<()>
 where
   T: ToYabaiDirection + std::fmt::Display,
 {
-  trace!("focusing direction: {}", direction);
-  get_yabai_command()?.args(["-m", "display", "--focus", direction.to_yabai_direction()]).run_command()
+  trace!("focusing direction: {direction}");
+  if is_dry_mode() {
+    warn!("skipping focus direction {direction}");
+    Ok(())
+  } else {
+    get_yabai_command()?.args(["-m", "display", "--focus", direction.to_yabai_direction()]).run_command()
+  }
 }
 
 pub fn swap_direction(direction: &MasterPosition) -> color_eyre::Result<()> {
   trace!("focusing direction: {:?}", direction);
-  get_yabai_command()?.args(["-m", "display", "--swap", direction.to_yabai_direction()]).run_command()
+  if is_dry_mode() {
+    warn!("skipping swap direction {:?}", direction);
+    Ok(())
+  } else {
+    get_yabai_command()?.args(["-m", "display", "--swap", direction.to_yabai_direction()]).run_command()
+  }
 }
 
 fn warp_direction(window: &Window, direction: &MasterPosition) -> color_eyre::Result<()> {
   trace!("warping window {window} to {direction} -> {direction}");
-  get_yabai_command()?
-    .args(["-m", "window", window.id.to_string().as_str(), "--warp", direction.to_yabai_direction()])
-    .run_command()
+  if is_dry_mode() {
+    warn!("skipping warp window {window} to {direction} -> {direction}");
+    Ok(())
+  } else {
+    get_yabai_command()?
+      .args(["-m", "window", window.id.to_string().as_str(), "--warp", direction.to_yabai_direction()])
+      .run_command()
+  }
 }
 
 fn warp_window(window: &Window, master_window: &Window) -> color_eyre::Result<()> {
   trace!("warping window {window} to master window {master_window}");
-  get_yabai_command()?
-    .args(["-m", "window", window.id.to_string().as_str(), "--warp", master_window.id.to_string().as_str()])
-    .run_command()
+  if is_dry_mode() {
+    warn!("skipping warp window {window} to master window {master_window}");
+    Ok(())
+  } else {
+    get_yabai_command()?
+      .args(["-m", "window", window.id.to_string().as_str(), "--warp", master_window.id.to_string().as_str()])
+      .run_command()
+  }
 }
 
 fn toggle_window_split(window: &Window) -> color_eyre::Result<()> {
-  use log::trace;
   trace!("splitting window {window}");
-  get_yabai_command()?.args(["-m", "window", window.id.to_string().as_str(), "--toggle", "split"]).run_command()
+  if is_dry_mode() {
+    warn!("skipping split window {window}");
+    Ok(())
+  } else {
+    get_yabai_command()?.args(["-m", "window", window.id.to_string().as_str(), "--toggle", "split"]).run_command()
+  }
 }
 
 #[cfg(test)]

@@ -1,6 +1,9 @@
 use clap::{command, Parser};
 
-use crate::task::{ymsp_task::YmspTask, Task};
+use crate::{
+  dry_mode::set_dry_mode,
+  task::{ymsp_task::YmspTask, Task},
+};
 
 #[derive(Parser, Debug)]
 #[command(version, author, about, long_about = None)]
@@ -15,5 +18,9 @@ pub struct Cli {
 }
 
 impl YmspTask for Cli {
-  fn run(&self) -> color_eyre::Result<()> { self.task.run() }
+  fn run(&self) -> color_eyre::Result<()> {
+    set_dry_mode(self.dry_run)?;
+
+    self.task.run()
+  }
 }
