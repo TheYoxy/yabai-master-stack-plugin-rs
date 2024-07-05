@@ -2,7 +2,6 @@ use log::{debug, error, trace};
 
 use crate::{window_manager::WindowsManager, yabai::window::Window};
 
-type Result<T> = color_eyre::Result<T>;
 impl WindowsManager {
   pub(crate) fn get_bottom_window(&self, windows: Vec<Window>) -> Option<Window> {
     if windows.is_empty() {

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use color_eyre::owo_colors::OwoColorize;
-use log::{debug, warn};
+use log::debug;
 
 use super::spaces::get_spaces;
 use crate::yabai::{config::get_state_path, spaces::Space};

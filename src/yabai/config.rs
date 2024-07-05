@@ -80,7 +80,7 @@ impl Default for YabaiMasterStackPluginConfig {
 }
 
 fn get_config_path() -> color_eyre::Result<PathBuf> {
-  let path = homedir::get_my_home()?.ok_or(eyre!("Failed to get home directory"))?;
+  let path = homedir::my_home()?.ok_or(eyre!("Failed to get home directory"))?;
 
   Ok(path.join(".config").join("ymsp"))
 }

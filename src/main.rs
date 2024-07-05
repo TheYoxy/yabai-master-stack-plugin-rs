@@ -5,6 +5,7 @@ use crate::yabai::config::check_config_path_exists;
 
 pub mod cli;
 mod dry_mode;
+mod initialize_logging;
 mod initialize_panic_handler;
 mod macros;
 mod task;
@@ -20,6 +21,8 @@ fn main() -> color_eyre::Result<()> {
   initialize_panic_handler()?;
   #[cfg(debug_assertions)]
   pretty_env_logger::init();
+  #[cfg(not(debug_assertions))]
+  initialize_logging::initialize_logging()?;
 
   check_config_path_exists()?;
 

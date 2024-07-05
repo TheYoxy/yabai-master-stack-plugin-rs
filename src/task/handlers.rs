@@ -239,7 +239,6 @@ pub(crate) mod window_count {
     let space = &iwm.space;
 
     let space_state = state.get_space_mut(space)?;
-    let windows = wm.windows();
     if *space_state > 1 {
       *space_state -= 1;
       wm.update_windows(*space_state)?;
