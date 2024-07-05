@@ -3,7 +3,8 @@ pub(crate) mod events {
 
   use crate::{
     task::create_initialized_windows_manager::InitializedWindowsManager,
-    yabai::{config::get_config, state::StateForSpace, window_manager::layout_visibility::LayoutValidity},
+    window_manager::layout_visibility::LayoutValidity,
+    yabai::{config::get_config, state::StateForSpace},
   };
 
   pub(crate) fn on_yabai_start(iwm: &mut InitializedWindowsManager) -> color_eyre::Result<()> {
@@ -86,14 +87,14 @@ pub(crate) mod focus {
 
   use crate::{
     task::create_initialized_windows_manager::InitializedWindowsManager,
+    window_manager::{
+      yabai::{focus_direction, focus_display, YabaiCommand, YabaiDirection},
+      WindowsManager,
+    },
     yabai::{
       config::get_config,
       display::{get_displays, get_focused_display},
       window::Window,
-      window_manager::{
-        yabai::{focus_direction, focus_display, YabaiCommand, YabaiDirection},
-        WindowsManager,
-      },
     },
   };
 
@@ -254,10 +255,12 @@ pub(crate) mod move_window {
   use color_eyre::eyre::bail;
   use log::trace;
 
-  use crate::yabai::{
-    config::get_config,
-    display::{get_displays, get_focused_display},
+  use crate::{
     window_manager::yabai::{focus_direction, move_window_to_display},
+    yabai::{
+      config::get_config,
+      display::{get_displays, get_focused_display},
+    },
   };
 
   pub(crate) fn move_window_to_master() -> color_eyre::Result<()> {

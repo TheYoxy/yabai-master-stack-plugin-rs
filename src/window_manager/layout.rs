@@ -1,9 +1,9 @@
 use color_eyre::{eyre::eyre, owo_colors::OwoColorize};
 use log::{debug, error, info, trace};
 
-use crate::yabai::{
-  config::{get_config, MasterPosition},
+use crate::{
   window_manager::{layout_visibility::LayoutValidity, WindowsManager},
+  yabai::config::{get_config, MasterPosition},
 };
 
 type Result<T> = color_eyre::Result<T>;
@@ -51,7 +51,7 @@ impl WindowsManager {
     }
   }
 
-  pub(super) fn get_dividing_line_x_coordinate(&self) -> Result<f64> {
+  pub(crate) fn get_dividing_line_x_coordinate(&self) -> Result<f64> {
     trace!("get_dividing_line_x_coordinate() called.");
     let config = get_config()?;
     trace!("Master position: {master_position:?}", master_position = config.master_position);

@@ -3,12 +3,12 @@ use log::{debug, trace};
 
 use crate::{
   print_bool,
+  window_manager::yabai::{get_yabai_config, YabaiConfig},
   yabai::{
     display::Display,
     spaces::Space,
     state::{write_state, State, StateForSpace},
     window::{get_windows, Window},
-    window_manager::yabai::{get_yabai_config, YabaiConfig},
   },
 };
 
@@ -25,10 +25,10 @@ pub mod windows;
 pub mod yabai;
 
 pub struct WindowsManager {
-  pub(super) display: Display,
-  pub(super) space: Space,
-  pub(super) expected_current_num_master_windows: usize,
-  pub(super) windows: Vec<Window>,
+  pub(crate) display: Display,
+  pub(crate) space: Space,
+  pub(crate) expected_current_num_master_windows: usize,
+  pub(crate) windows: Vec<Window>,
 }
 
 type Result<T> = color_eyre::Result<T>;
@@ -51,7 +51,7 @@ impl WindowsManager {
     Ok(())
   }
 
-  pub(super) fn get_windows_data(&self) -> Result<Vec<Window>> {
+  pub(crate) fn get_windows_data(&self) -> Result<Vec<Window>> {
     debug!("Reading windows data from yabai");
     let windows = get_windows()?;
     debug!("Found {len} windows", len = windows.len().blue());
@@ -101,7 +101,7 @@ impl WindowsManager {
 
   pub(crate) fn get_focused_window(&self) -> Option<&Window> { self.windows.iter().find(|window| window.has_focus) }
 
-  pub(super) fn is_windows_touching_left_edge(&self, window: &Window) -> Result<bool> {
+  pub(crate) fn is_windows_touching_left_edge(&self, window: &Window) -> Result<bool> {
     let left_padding: f64 = get_yabai_config(YabaiConfig::LeftPadding)?;
     trace!(
       "Checking if {window} is touching the left edge {x} {dx}",
@@ -111,7 +111,7 @@ impl WindowsManager {
     Ok(window.frame.x == self.display.frame.x + left_padding)
   }
 
-  pub(super) fn get_updated_window_data(&self, window: &Window) -> Option<&Window> {
+  pub(crate) fn get_updated_window_data(&self, window: &Window) -> Option<&Window> {
     trace!("Updating window data for {window}");
     self.windows.iter().find(move |win| win.id == window.id)
   }

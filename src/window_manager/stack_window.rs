@@ -2,10 +2,10 @@ use log::{debug, error, trace};
 
 use crate::{
   print_bool,
+  window_manager::WindowsManager,
   yabai::{
     config::{get_config, MasterPosition},
     window::Window,
-    window_manager::WindowsManager,
   },
 };
 

@@ -1,6 +1,6 @@
 use log::debug;
 
-use crate::yabai::{window::Window, window_manager::WindowsManager};
+use crate::{window_manager::WindowsManager, yabai::window::Window};
 
 type Result<T> = color_eyre::Result<T>;
 
@@ -21,13 +21,13 @@ fn get_widest(windows: Vec<Window>) -> Option<Window> {
 }
 
 impl WindowsManager {
-  pub(super) fn get_widest_master_window(&self) -> Result<Option<Window>> {
+  pub(crate) fn get_widest_master_window(&self) -> Result<Option<Window>> {
     let master_windows = self.get_master_windows()?;
 
     Ok(get_widest(master_windows))
   }
 
-  pub(super) fn get_widest_stack_window(&self) -> Option<Window> {
+  pub(crate) fn get_widest_stack_window(&self) -> Option<Window> {
     let stack_windows = self.get_stack_windows();
     get_widest(stack_windows)
   }

@@ -45,15 +45,15 @@ pub enum Task {
   WindowCreated,
   /// Event handler for when a window is moved
   WindowMoved,
-  /// Focus the down window in the current space
+  /// Focuses on the window above the currently focused window
   FocusDownWindow,
-  /// Focus the up window in the current space
+  /// Focuses on the window below the currently focused window
   FocusUpWindow,
-  /// Increase the number of windows in the master pane
+  /// Increases the number of master windows.
   IncreaseMasterWindowCount,
-  /// Decrease the number of windows in the master pane
+  /// Decreases the number of master windows.
   DecreaseMasterWindowCount,
-  /// Close the focused window
+  /// Quits the currently focused window by Yabai.
   CloseFocusedWindow,
   /// Focus the next display
   FocusNextDisplay,
@@ -98,3 +98,6 @@ impl YmspTask for Task {
     }
   }
 }
+
+#[cfg(test)]
+mod tests {}

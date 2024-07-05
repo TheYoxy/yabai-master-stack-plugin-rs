@@ -1,9 +1,11 @@
 use log::{debug, info};
 
-use crate::yabai::{
-  config::get_config,
-  window::{SplitType, Window},
+use crate::{
   window_manager::{yabai::YabaiCommand, WindowsManager},
+  yabai::{
+    config::get_config,
+    window::{SplitType, Window},
+  },
 };
 
 impl WindowsManager {

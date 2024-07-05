@@ -1,8 +1,8 @@
 use log::{debug, info};
 
-use crate::yabai::{
-  window::{SplitType, Window},
+use crate::{
   window_manager::{yabai::YabaiCommand, WindowsManager},
+  yabai::window::{SplitType, Window},
 };
 
 type Result<T> = color_eyre::Result<T>;
@@ -21,14 +21,14 @@ impl WindowsManager {
     Ok(())
   }
 
-  pub(super) fn columnize_master_windows(&self) -> Result<()> {
+  pub(crate) fn columnize_master_windows(&self) -> Result<()> {
     debug!("Columnizing master windows");
     let master_windows = self.get_master_windows()?;
     self.columnize_windows(master_windows, SplitType::Vertical)?;
     Ok(())
   }
 
-  pub(super) fn columnize_stack_windows(&self) -> Result<()> {
+  pub(crate) fn columnize_stack_windows(&self) -> Result<()> {
     debug!("Columnizing stack windows");
     if self.expected_current_num_master_windows == self.windows.len() {
       info!("Skipped colonizing stack windows bc there is no stack");

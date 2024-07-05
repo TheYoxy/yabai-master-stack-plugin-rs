@@ -8,6 +8,7 @@ mod dry_mode;
 mod initialize_panic_handler;
 mod macros;
 mod task;
+pub mod window_manager;
 mod yabai;
 
 fn main() -> color_eyre::Result<()> {

@@ -1,9 +1,11 @@
-use log::{debug, error};
+use log::debug;
 
-use crate::yabai::{
-  config::{get_config, MasterPosition},
-  window::{SplitType, Window},
+use crate::{
   window_manager::{yabai::YabaiCommand, WindowsManager},
+  yabai::{
+    config::{get_config, MasterPosition},
+    window::{SplitType, Window},
+  },
 };
 
 type Result<T> = color_eyre::Result<T>;
@@ -12,19 +14,7 @@ impl WindowsManager {
     debug!("Looking for master windows");
     let config = get_config()?;
     let result = match config.master_position {
-      MasterPosition::Left => {
-        self
-          .windows
-          .clone()
-          .into_iter()
-          .filter(|window| {
-            self
-              .is_windows_touching_left_edge(window)
-              .inspect_err(|err| error!("An error occurred while checking if windows touch: {err}"))
-              .is_ok_and(|is_touching| is_touching)
-          })
-          .collect()
-      },
+      MasterPosition::Left => self.get_left_window(),
       MasterPosition::Right => {
         let dividing_line_x_coordinate = self.get_dividing_line_x_coordinate()?;
         self.windows.clone().into_iter().filter(|window| window.frame.x >= dividing_line_x_coordinate).collect()

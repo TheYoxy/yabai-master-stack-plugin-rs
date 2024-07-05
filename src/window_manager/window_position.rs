@@ -1,10 +1,10 @@
 use log::{debug, error, trace};
 
-use crate::yabai::{window::Window, window_manager::WindowsManager};
+use crate::{window_manager::WindowsManager, yabai::window::Window};
 
 type Result<T> = color_eyre::Result<T>;
 impl WindowsManager {
-  pub(super) fn get_bottom_window(&self, windows: Vec<Window>) -> Option<Window> {
+  pub(crate) fn get_bottom_window(&self, windows: Vec<Window>) -> Option<Window> {
     if windows.is_empty() {
       debug!("No windows provided to find bottom window");
       return None;
@@ -39,7 +39,7 @@ impl WindowsManager {
     }
   }
 
-  pub(super) fn get_top_window(&self, windows: Vec<Window>) -> Option<Window> {
+  pub(crate) fn get_top_window(&self, windows: Vec<Window>) -> Option<Window> {
     if windows.is_empty() {
       debug!("No windows provided to find top window");
       return None;
@@ -55,14 +55,8 @@ impl WindowsManager {
     Some(top_window.clone())
   }
 
-  pub(super) fn get_top_left_window(&self) -> Option<Window> {
-    trace!("Looking for top left window");
-    if self.windows.is_empty() {
-      trace!("No windows found");
-      return None;
-    }
-
-    let mut left_windows = self
+  pub(super) fn get_left_window(&self) -> Vec<Window> {
+    self
       .windows
       .clone()
       .into_iter()
@@ -72,7 +66,17 @@ impl WindowsManager {
           .inspect_err(|err| error!("An error occurred while checking if windows touch: {err}"))
           .is_ok_and(|is_touching| is_touching)
       })
-      .collect::<Vec<_>>();
+      .collect()
+  }
+
+  pub(crate) fn get_top_left_window(&self) -> Option<Window> {
+    trace!("Looking for top left window");
+    if self.windows.is_empty() {
+      trace!("No windows found");
+      return None;
+    }
+
+    let mut left_windows = self.get_left_window();
     if left_windows.is_empty() {
       trace!("No left windows found");
       return None;
@@ -84,7 +88,7 @@ impl WindowsManager {
     left_windows.first().cloned()
   }
 
-  pub(super) fn get_top_right_window(&self) -> Option<Window> {
+  pub(crate) fn get_top_right_window(&self) -> Option<Window> {
     if self.windows.is_empty() {
       return None;
     }
@@ -116,7 +120,7 @@ impl WindowsManager {
     }
   }
 
-  pub(super) fn is_middle_window(&self, window: &Window) -> bool {
+  pub(crate) fn is_middle_window(&self, window: &Window) -> bool {
     trace!("Checking if {window} is a middle window");
 
     !self
@@ -129,7 +133,7 @@ impl WindowsManager {
         .is_ok_and(|r| r)
   }
 
-  pub(super) fn get_middle_windows(&self) -> Vec<&Window> {
+  pub(crate) fn get_middle_windows(&self) -> Vec<&Window> {
     debug!("Looking for middle windows");
     self.windows.iter().filter(|w| self.is_middle_window(w)).collect::<Vec<_>>()
   }

@@ -1,11 +1,13 @@
 use color_eyre::owo_colors::OwoColorize;
 use log::trace;
 
-use crate::yabai::{
-  display::{get_focused_display, Display},
-  spaces::{get_focused_space, Space},
-  state::{read_state, State, StateForSpace},
+use crate::{
   window_manager::WindowsManager,
+  yabai::{
+    display::{get_focused_display, Display},
+    spaces::{get_focused_space, Space},
+    state::{read_state, State, StateForSpace},
+  },
 };
 
 pub(super) struct InitializedWindowsManager {

@@ -8,6 +8,7 @@ use crate::{print_bool, yabai::config::get_config};
 trait GetCommand {
   fn get_command(&self) -> String;
 }
+
 impl GetCommand for Command {
   fn get_command(&self) -> String {
     let args = self.get_args().filter_map(|a| a.to_str()).collect::<Vec<_>>().join(" ");
@@ -19,6 +20,7 @@ pub trait RunCommand {
   fn run_command(&mut self) -> color_eyre::Result<()>;
   fn run_command_with_output(&mut self) -> color_eyre::Result<Output>;
 }
+
 impl RunCommand for Command {
   fn run_command(&mut self) -> color_eyre::Result<()> {
     handle_output_result(self)?;

@@ -6,12 +6,12 @@ use log::{trace, warn};
 use crate::{
   dry_mode::is_dry_mode,
   task::lock::is_locked,
+  window_manager::WindowsManager,
   yabai::{
     commands::{get_yabai_command, RunCommand},
     config::{MasterPosition, ToYabaiDirection},
     display::Display,
     window::Window,
-    window_manager::WindowsManager,
   },
 };
 
@@ -124,7 +124,7 @@ impl WindowsManager {
   }
 }
 
-pub(super) fn get_yabai_config<T>(config: YabaiConfig) -> color_eyre::Result<T>
+pub(crate) fn get_yabai_config<T>(config: YabaiConfig) -> color_eyre::Result<T>
 where
   T: serde::de::DeserializeOwned,
 {
