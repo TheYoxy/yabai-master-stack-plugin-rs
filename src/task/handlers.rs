@@ -305,3 +305,23 @@ pub(crate) mod move_window {
   }
   pub(crate) fn close_focused_window() -> color_eyre::Result<()> { todo!() }
 }
+
+pub(crate) mod completion {
+  use clap::CommandFactory;
+  use log::debug;
+
+  use crate::{cli::cli::Cli, task::CompletionArgs};
+
+  fn print_completions<G: clap_complete::Generator>(gen: G, cmd: &mut clap::Command) {
+    use clap_complete::generate;
+    debug!("Generating completions for command: {:?}", cmd.get_name());
+    generate(gen, cmd, cmd.get_name().to_string(), &mut std::io::stdout());
+  }
+
+  pub(crate) fn generate_completion(completion: &CompletionArgs) -> color_eyre::Result<()> {
+    let mut cmd = Cli::command();
+    debug!("Generating completions for shell: {:?}", completion);
+    print_completions(completion.shell, &mut cmd);
+    Ok(())
+  }
+}

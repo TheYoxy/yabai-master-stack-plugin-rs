@@ -87,6 +87,17 @@ fn get_config_path() -> color_eyre::Result<PathBuf> {
   Ok(path.join(".config").join("ymsp"))
 }
 
+pub fn check_config_path_exists() -> color_eyre::Result<()> {
+  let path = get_config_path()?;
+  let exists = path.exists();
+
+  if exists {
+    Ok(())
+  } else {
+    bail!("Configuration path {path:?} does not exist")
+  }
+}
+
 pub fn get_state_path() -> color_eyre::Result<PathBuf> {
   let path = get_config_path()?;
   let state = path.join("state.json");

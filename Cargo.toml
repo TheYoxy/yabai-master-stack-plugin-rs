@@ -8,7 +8,9 @@ edition = "2021"
 [dependencies]
 better-panic = "0.3.0"
 clap = { version = "4.5.8", features = ["derive"] }
+clap_complete = "4.5.7"
 color-eyre = "0.6.3"
+fslock = "0.2.1"
 homedir = "0.2.1"
 human-panic = "2.0.0"
 libc = "0.2.155"

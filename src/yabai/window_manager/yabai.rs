@@ -1,17 +1,17 @@
-use std::{
-  fmt::{Debug, Formatter},
-  fs,
-};
+use std::fmt::{Debug, Formatter};
 
 use color_eyre::{eyre::bail, owo_colors::OwoColorize};
 use log::trace;
 
-use crate::yabai::{
-  commands::{get_yabai_command, RunCommand},
-  config::{get_lockfile, MasterPosition, ToYabaiDirection},
-  display::Display,
-  window::Window,
-  window_manager::ctor::WindowsManager,
+use crate::{
+  task::lock::is_locked,
+  yabai::{
+    commands::{get_yabai_command, RunCommand},
+    config::{MasterPosition, ToYabaiDirection},
+    display::Display,
+    window::Window,
+    window_manager::ctor::WindowsManager,
+  },
 };
 
 #[derive(Debug)]
@@ -102,27 +102,23 @@ impl YabaiConfig {
 
 impl WindowsManager {
   pub(crate) fn run_yabai_command(&self, command: YabaiCommand) -> color_eyre::Result<()> {
-    let lockfile = get_lockfile()?;
-    let exists = lockfile.try_exists()?;
-    if !exists {
-      bail!("Lockfile is not longer owned by this process");
-    }
-    let pid = fs::read_to_string(lockfile)?;
-    let pid: u32 = pid.parse()?;
-    let current_pid = std::process::id();
-    trace!("Checking lockfile pid: {} == {}", pid.blue(), current_pid.blue());
-    if pid != current_pid {
-      bail!("Lockfile is not longer owned by this process");
-    }
-    trace!("Lockfile pid is owned by this process");
-
-    trace!("Running yabai command: {}", command.blue());
-    match command {
-      YabaiCommand::WarpWindow(window, master_window) => warp_window(window, master_window),
-      YabaiCommand::ToggleWindowSplit(window) => toggle_window_split(window),
-      YabaiCommand::WarpDirection(window, position) => warp_direction(window, position),
-      YabaiCommand::FocusWindow(window) => focus_window(window),
-      YabaiCommand::FocusDirection(direction) => focus_direction(&direction),
+    match is_locked() {
+      Ok(false) => {
+        trace!("Running yabai command: {}", command.blue());
+        match command {
+          YabaiCommand::WarpWindow(window, master_window) => warp_window(window, master_window),
+          YabaiCommand::ToggleWindowSplit(window) => toggle_window_split(window),
+          YabaiCommand::WarpDirection(window, position) => warp_direction(window, position),
+          YabaiCommand::FocusWindow(window) => focus_window(window),
+          YabaiCommand::FocusDirection(direction) => focus_direction(&direction),
+        }
+      },
+      Ok(true) => {
+        bail!("Lockfile is already owned by another process");
+      },
+      Err(e) => {
+        bail!("Could not check if lockfile exists: {}", e);
+      },
     }
   }
 }
