@@ -64,6 +64,7 @@
               description = package.description;
               homepage = package.repository;
               license = lib.licenses.mit;
+              mainProgram = package.name;
               maintainers = [
                 {
                   name = "TheYoxy";
