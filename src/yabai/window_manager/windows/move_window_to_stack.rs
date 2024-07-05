@@ -3,7 +3,7 @@ use log::{debug, info};
 use crate::yabai::{
   config::get_config,
   window::{SplitType, Window},
-  window_manager::{ctor::WindowsManager, yabai::YabaiCommand},
+  window_manager::{yabai::YabaiCommand, WindowsManager},
 };
 
 impl WindowsManager {

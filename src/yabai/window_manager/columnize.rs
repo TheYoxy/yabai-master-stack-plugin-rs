@@ -2,7 +2,7 @@ use log::{debug, info};
 
 use crate::yabai::{
   window::{SplitType, Window},
-  window_manager::{ctor::WindowsManager, yabai::YabaiCommand},
+  window_manager::{yabai::YabaiCommand, WindowsManager},
 };
 
 type Result<T> = color_eyre::Result<T>;

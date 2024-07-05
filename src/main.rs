@@ -3,7 +3,7 @@
 
 use crate::yabai::config::check_config_path_exists;
 
-mod cli;
+pub mod cli;
 mod initialize_panic_handler;
 mod macros;
 mod task;
@@ -23,7 +23,7 @@ fn main() -> color_eyre::Result<()> {
 
   info!("Starting ymsp");
   debug!("Parsing CLI arguments");
-  let args = cli::cli::Cli::parse();
+  let args = cli::Cli::parse();
 
   debug!("Running command");
   args.run()

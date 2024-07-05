@@ -10,7 +10,7 @@ use crate::{
     config::{MasterPosition, ToYabaiDirection},
     display::Display,
     window::Window,
-    window_manager::ctor::WindowsManager,
+    window_manager::WindowsManager,
   },
 };
 

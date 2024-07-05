@@ -1,10 +1,9 @@
 use color_eyre::{eyre::bail, owo_colors::OwoColorize};
 use log::{debug, info, trace, warn};
 
-use super::ctor::WindowsManager;
 use crate::yabai::{
   window::{SplitType, Window},
-  window_manager::{layout_visibility::LayoutValidity, yabai::YabaiCommand},
+  window_manager::{layout_visibility::LayoutValidity, yabai::YabaiCommand, WindowsManager},
 };
 
 impl WindowsManager {

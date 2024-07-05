@@ -91,8 +91,8 @@ pub(crate) mod focus {
       display::{get_displays, get_focused_display},
       window::Window,
       window_manager::{
-        ctor::WindowsManager,
         yabai::{focus_direction, focus_display, YabaiCommand, YabaiDirection},
+        WindowsManager,
       },
     },
   };
@@ -310,7 +310,7 @@ pub(crate) mod completion {
   use clap::CommandFactory;
   use log::debug;
 
-  use crate::{cli::cli::Cli, task::CompletionArgs};
+  use crate::{cli::Cli, task::CompletionArgs};
 
   fn print_completions<G: clap_complete::Generator>(gen: G, cmd: &mut clap::Command) {
     use clap_complete::generate;

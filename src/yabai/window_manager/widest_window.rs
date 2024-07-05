@@ -1,6 +1,6 @@
 use log::debug;
 
-use crate::yabai::{window::Window, window_manager::ctor::WindowsManager};
+use crate::yabai::{window::Window, window_manager::WindowsManager};
 
 type Result<T> = color_eyre::Result<T>;
 

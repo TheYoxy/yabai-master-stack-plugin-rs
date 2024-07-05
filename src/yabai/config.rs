@@ -3,10 +3,12 @@ use std::{fmt::Debug, path::PathBuf, sync::OnceLock};
 
 use color_eyre::{
   eyre::{bail, eyre},
-  owo_colors::{AnsiColors, OwoColorize},
+  owo_colors::OwoColorize,
 };
 use log::trace;
 use serde::Deserialize;
+
+use crate::print_bool;
 
 #[derive(Debug, Default, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -51,18 +53,14 @@ pub struct YabaiMasterStackPluginConfig {
 
 impl Display for YabaiMasterStackPluginConfig {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    let debug = self.debug.color(if self.debug { AnsiColors::Green } else { AnsiColors::Red });
-    let move_new_windows_to_master = self.move_new_windows_to_master.color(if self.move_new_windows_to_master {
-      AnsiColors::Green
-    } else {
-      AnsiColors::Red
-    });
-    let path = self.yabai_path.color(if self.yabai_path == YabaiMasterStackPluginConfig::default().yabai_path {
-      AnsiColors::Green
-    } else {
-      AnsiColors::Yellow
-    });
-    write!(f, "YabaiMasterStackPluginConfig {{ yabai_path: {}, debug: {}, move_new_windows_to_master: {}, master_position: {:?} }}", path, debug, move_new_windows_to_master, self.master_position)
+    let debug = print_bool!(self.debug);
+    let move_new_windows_to_master = print_bool!(self.move_new_windows_to_master);
+    let path = print_bool!(
+      self.yabai_path == YabaiMasterStackPluginConfig::default().yabai_path,
+      self.yabai_path,
+      self.yabai_path
+    );
+    write!(f, "YabaiMasterStackPluginConfig {{ yabai_path: {}, debug: {}, move_new_windows_to_master: {}, master_position: {} }}", path, debug, move_new_windows_to_master, self.master_position)
   }
 }
 

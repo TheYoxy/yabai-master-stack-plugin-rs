@@ -1,12 +1,9 @@
 use std::process::{Command, Output};
 
-use color_eyre::{
-  eyre::eyre,
-  owo_colors::{AnsiColors, OwoColorize},
-};
+use color_eyre::{eyre::eyre, owo_colors::OwoColorize};
 use log::{error, trace};
 
-use crate::yabai::config::get_config;
+use crate::{print_bool, yabai::config::get_config};
 
 trait GetCommand {
   fn get_command(&self) -> String;
@@ -41,7 +38,7 @@ fn handle_output_result(command: &mut Command) -> color_eyre::Result<Output> {
   let output = command.output()?;
 
   let code = output.status.code().ok_or(eyre!("unable to get status code for command output"))?;
-  let status = if output.status.success() { code.color(AnsiColors::Green) } else { code.color(AnsiColors::Red) };
+  let status = print_bool!(output.status.success(), code, code);
   if !output.status.success() {
     error!("{command_call} -> {status}");
     error!("stdout: {stdout}", stdout = String::from_utf8_lossy(&output.stdout));
