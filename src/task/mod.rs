@@ -1,60 +1,88 @@
+use std::fmt::Formatter;
+
 use clap::Subcommand;
+use color_eyre::owo_colors::OwoColorize;
 use log::info;
 
-use crate::task::create_initialized_windows_manager::create_initialized_windows_manager;
-use crate::task::lock_file::lock_file;
-use crate::task::on_yabai_start::on_yabai_start;
-use crate::task::window_created::window_created;
-use crate::task::window_moved::window_moved;
-use crate::task::ymsp_task::YmspTask;
-use crate::yabai::config::initialize_config;
+use crate::{
+  task::{
+    create_initialized_windows_manager::create_initialized_windows_manager,
+    handlers::{
+      events::{on_yabai_start, window_created, window_moved},
+      focus::{focus_down_window, focus_master_window, focus_next_display, focus_previous_display, focus_up_window},
+      move_window::{
+        close_focused_window, move_window_to_master, move_window_to_next_display, move_window_to_previous_display,
+      },
+      window_count::{decrease_master_window_count, increase_master_window_count},
+    },
+    lock_file::lock_file,
+    ymsp_task::YmspTask,
+  },
+  yabai::config::initialize_config,
+};
 
 mod create_initialized_windows_manager;
+mod handlers;
 mod lock_file;
-mod on_yabai_start;
-mod window_created;
-mod window_moved;
 pub mod ymsp_task;
 
 #[derive(Subcommand, Debug)]
 pub enum Task {
-    CloseFocusedWindow,
-    DecreaseMasterWindowCount,
-    FocusDownWindow,
-    FocusUpWindow,
-    IncreaseMasterWindowCount,
-    OnYabaiStart,
-    WindowCreated,
-    WindowMoved,
-    FocusNextDisplay,
-    FocusPreviousDisplay,
-    MoveWindowToNextDisplay,
-    MoveWindowToPreviousDisplay,
-    MoveWindowToMaster,
-    FocusMasterWindow,
+  /// Base handler for when yabai starts
+  OnYabaiStart,
+  /// Event handler for when a window is created
+  WindowCreated,
+  /// Event handler for when a window is moved
+  WindowMoved,
+  /// Focus the down window in the current space
+  FocusDownWindow,
+  /// Focus the up window in the current space
+  FocusUpWindow,
+  /// Increase the number of windows in the master pane
+  IncreaseMasterWindowCount,
+  /// Decrease the number of windows in the master pane
+  DecreaseMasterWindowCount,
+  /// Close the focused window
+  CloseFocusedWindow,
+  /// Focus the next display
+  FocusNextDisplay,
+  /// Focus the previous display
+  FocusPreviousDisplay,
+  /// Move the focused window to the next display
+  MoveWindowToNextDisplay,
+  /// Move the focused window to the previous display
+  MoveWindowToPreviousDisplay,
+  /// Move the focused window to the master pane
+  MoveWindowToMaster,
+  /// Focus the master window
+  FocusMasterWindow,
+}
+impl std::fmt::Display for Task {
+  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result { write!(f, "{:?}", self) }
 }
 
 impl YmspTask for Task {
-    fn run(&self) -> color_eyre::Result<()> {
-        initialize_config()?;
-        let mut state = create_initialized_windows_manager()?;
-        info!("Running task {self:?}");
-        lock_file()?;
-        match self {
-            Task::OnYabaiStart => on_yabai_start(&mut state),
-            Task::CloseFocusedWindow => todo!(),
-            Task::DecreaseMasterWindowCount => todo!(),
-            Task::FocusDownWindow => todo!(),
-            Task::FocusUpWindow => todo!(),
-            Task::WindowCreated => window_created(&mut state),
-            Task::WindowMoved => window_moved(&mut state),
-            Task::FocusNextDisplay => todo!(),
-            Task::FocusPreviousDisplay => todo!(),
-            Task::MoveWindowToNextDisplay => todo!(),
-            Task::MoveWindowToPreviousDisplay => todo!(),
-            Task::MoveWindowToMaster => todo!(),
-            Task::FocusMasterWindow => todo!(),
-            Task::IncreaseMasterWindowCount => todo!(),
-        }
+  fn run(&self) -> color_eyre::Result<()> {
+    initialize_config()?;
+    let mut state = create_initialized_windows_manager()?;
+    info!("Running task {}", self.yellow());
+    lock_file()?;
+
+    match self {
+      Task::OnYabaiStart => on_yabai_start(&mut state),
+      Task::WindowCreated => window_created(&mut state),
+      Task::WindowMoved => window_moved(&mut state),
+      Task::IncreaseMasterWindowCount => increase_master_window_count(&mut state),
+      Task::DecreaseMasterWindowCount => decrease_master_window_count(&mut state),
+      Task::FocusMasterWindow => focus_master_window(),
+      Task::FocusUpWindow => focus_up_window(&mut state),
+      Task::FocusDownWindow => focus_down_window(&mut state),
+      Task::FocusNextDisplay => focus_next_display(),
+      Task::FocusPreviousDisplay => focus_previous_display(),
+      Task::MoveWindowToMaster => move_window_to_master(),
+      Task::MoveWindowToNextDisplay => move_window_to_next_display(),
+      Task::MoveWindowToPreviousDisplay => move_window_to_previous_display(),
+      Task::CloseFocusedWindow => close_focused_window(),
     }
+  }
 }

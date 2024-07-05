@@ -1,3 +1,3 @@
 pub trait YmspTask {
-    fn run(&self) -> color_eyre::Result<()>;
+  fn run(&self) -> color_eyre::Result<()>;
 }

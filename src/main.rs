@@ -9,18 +9,19 @@ pub mod task;
 mod yabai;
 
 fn main() -> color_eyre::Result<()> {
-    use crate::task::ymsp_task::YmspTask;
-    use clap::Parser as _;
-    use log::{debug, info};
+  use clap::Parser as _;
+  use log::{debug, info};
 
-    initialize_panic_handler()?;
-    #[cfg(debug_assertions)]
-    pretty_env_logger::init_timed();
+  use crate::task::ymsp_task::YmspTask;
 
-    info!("Starting ymsp");
-    debug!("Parsing CLI arguments");
-    let args = cli::cli::Cli::parse();
+  initialize_panic_handler()?;
+  #[cfg(debug_assertions)]
+  pretty_env_logger::init();
 
-    debug!("Running command");
-    args.run()
+  info!("Starting ymsp");
+  debug!("Parsing CLI arguments");
+  let args = cli::cli::Cli::parse();
+
+  debug!("Running command");
+  args.run()
 }
