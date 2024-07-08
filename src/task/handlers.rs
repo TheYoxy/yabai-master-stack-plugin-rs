@@ -252,7 +252,7 @@ pub(crate) mod window_count {
 
 pub(crate) mod move_window {
   use color_eyre::eyre::bail;
-  use log::trace;
+  use log::{info, trace};
 
   use crate::{
     window_manager::yabai::{focus_direction, move_window_to_display},
@@ -263,12 +263,14 @@ pub(crate) mod move_window {
   };
 
   pub(crate) fn move_window_to_master() -> color_eyre::Result<()> {
+    info!("moving current window to master");
     let config = get_config()?;
 
     focus_direction(&config.master_position)?;
 
     Ok(())
   }
+
   pub(crate) fn move_window_to_next_display() -> color_eyre::Result<()> {
     let mut displays = get_displays()?;
     let focused_display = get_focused_display()?;

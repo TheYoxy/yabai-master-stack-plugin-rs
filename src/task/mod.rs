@@ -60,11 +60,11 @@ pub enum Task {
   /// Focus the previous display
   FocusPreviousDisplay,
   /// Move the focused window to the next display
-  MoveWindowToNextDisplay,
+  MoveToNextDisplay,
   /// Move the focused window to the previous display
-  MoveWindowToPreviousDisplay,
+  MoveToPreviousDisplay,
   /// Move the focused window to the master pane
-  MoveWindowToMaster,
+  MoveToMaster,
   /// Focus the master window
   FocusMasterWindow,
 }
@@ -90,9 +90,9 @@ impl YmspTask for Task {
       Task::FocusDownWindow => run_locked(|| focus_down_window(&mut state)),
       Task::FocusNextDisplay => focus_next_display(),
       Task::FocusPreviousDisplay => focus_previous_display(),
-      Task::MoveWindowToMaster => move_window_to_master(),
-      Task::MoveWindowToNextDisplay => move_window_to_next_display(),
-      Task::MoveWindowToPreviousDisplay => move_window_to_previous_display(),
+      Task::MoveToMaster => move_window_to_master(),
+      Task::MoveToNextDisplay => move_window_to_next_display(),
+      Task::MoveToPreviousDisplay => move_window_to_previous_display(),
       Task::CloseFocusedWindow => close_focused_window(),
       Task::Completion(completion) => generate_completion(completion),
     }
