@@ -4,9 +4,7 @@ use log::trace;
 use crate::{
   window_manager::WindowsManager,
   yabai::{
-    display::{get_focused_display, Display},
-    spaces::{get_focused_space, Space},
-    state::{read_state, State, StateForSpace},
+    config::initialize_config, display::{get_focused_display, Display}, spaces::{get_focused_space, Space}, state::{read_state, State, StateForSpace}
   },
 };
 
@@ -18,6 +16,7 @@ pub(super) struct InitializedWindowsManager {
 }
 
 pub(super) fn create_initialized_windows_manager() -> color_eyre::Result<InitializedWindowsManager> {
+initialize_config()?;
   trace!("Initializing windows manager");
   let mut state = read_state()?;
   let display = get_focused_display()?;

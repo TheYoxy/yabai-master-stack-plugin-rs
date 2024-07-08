@@ -10,7 +10,7 @@ use crate::{
 pub struct Cli {
   /// The yabai master stack plugin task to run
   #[command(subcommand)]
-  task: Task,
+  pub(crate) task: Task,
 
   /// Do not actually run the task, just print what would be done
   #[arg(short = 'n', long)]

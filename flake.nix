@@ -12,6 +12,7 @@
   };
 
   outputs = {
+    self,
     nixpkgs,
     flake-utils,
     rust-overlay,
@@ -48,16 +49,46 @@
       };
 
       packages = let
-        lib = pkgs.lib;
-        package = (lib.importTOML ./Cargo.toml).package;
+        inherit (pkgs) lib;
+        inherit (lib.importTOML ./Cargo.toml) package;
+        rev = self.shortRev or self.dirtyShortRev or "dirty";
       in rec {
         ymsp =
           rustPlatform
           .buildRustPackage {
             pname = package.name;
-            version = package.version;
-            src = ./.;
+            version = "${package.version}-${rev}";
+            src = lib.fileset.toSource {
+              root = ./.;
+              fileset =
+                lib.fileset.intersection
+                (lib.fileset.fromSource (lib.sources.cleanSource ./.))
+                (lib.fileset.unions [
+                  ./src
+                  ./Cargo.toml
+                  ./Cargo.lock
+                ]);
+            };
+
             cargoLock.lockFile = ./Cargo.lock;
+
+            strictDeps = true;
+
+            nativeBuildInputs = with pkgs; [
+              installShellFiles
+              makeBinaryWrapper
+            ];
+
+            preFixup = ''
+              echo "Creating completions directory..."
+              mkdir completions
+              echo "Generating shell completions..."
+              RUST_LOG=trace $out/bin/${package.name} completions bash > completions/${package.name}.bash
+              RUST_LOG=trace $out/bin/${package.name} completions zsh > completions/${package.name}.zsh
+              RUST_LOG=trace $out/bin/${package.name} completions fish > completions/${package.name}.fish
+
+              installShellCompletion completions/*
+            '';
 
             doCheck = false;
             meta = {
