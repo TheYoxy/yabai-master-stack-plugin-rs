@@ -255,7 +255,7 @@ pub(crate) mod move_window {
   use log::{info, trace};
 
   use crate::{
-    window_manager::yabai::{focus_direction, move_window_to_display},
+    window_manager::yabai::{focus_direction, move_window_to_display, swap_window_direction},
     yabai::{
       config::get_config,
       display::{get_displays, get_focused_display},
@@ -266,7 +266,8 @@ pub(crate) mod move_window {
     info!("moving current window to master");
     let config = get_config()?;
 
-    focus_direction(&config.master_position)?;
+    // todo: check if the current window is already in the master position
+    swap_window_direction(&config.master_position)?;
 
     Ok(())
   }

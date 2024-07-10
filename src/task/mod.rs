@@ -5,10 +5,9 @@ use clap_complete::Shell;
 use color_eyre::owo_colors::OwoColorize;
 use log::info;
 
-use crate::task::{
+use crate::{task::{
   create_initialized_windows_manager::create_initialized_windows_manager,
   handlers::{
-    completion::generate_completion,
     events::{on_yabai_start, window_created, window_moved},
     focus::{focus_down_window, focus_master_window, focus_next_display, focus_previous_display, focus_up_window},
     move_window::{
@@ -18,7 +17,7 @@ use crate::task::{
   },
   lock::run_locked,
   ymsp_task::YmspTask,
-};
+}, yabai::config::initialize_config};
 
 mod create_initialized_windows_manager;
 pub(crate) mod handlers;
@@ -74,6 +73,7 @@ impl YmspTask for Task {
   fn run(&self) -> color_eyre::Result<()> {
     info!("Running task {}", self.yellow());
 
+    initialize_config()?;
     match self {
       Task::OnYabaiStart => {
         run_locked(|| {
@@ -124,10 +124,7 @@ impl YmspTask for Task {
       Task::MoveToNextDisplay => move_window_to_next_display(),
       Task::MoveToPreviousDisplay => move_window_to_previous_display(),
       Task::CloseFocusedWindow => close_focused_window(),
-      action => unreachable!("{:?} must not be called", action.red().bold())
+      action => unreachable!("{:?} must not be called", action.red().bold()),
     }
   }
 }
-
-#[cfg(test)]
-mod tests {}

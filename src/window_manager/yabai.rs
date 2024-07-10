@@ -179,6 +179,17 @@ where
   }
 }
 
+pub fn swap_window_direction(direction: &MasterPosition) -> color_eyre::Result<()> {
+  trace!("focusing direction: {:?}", direction);
+  if is_dry_mode() {
+    warn!("skipping swap direction {:?}", direction);
+    Ok(())
+  } else {
+    get_yabai_command()?.args(["-m", "window", "--swap", direction.to_yabai_direction()]).run_command()
+  }
+}
+
+#[deprecated = "this doens't works"]
 pub fn swap_direction(direction: &MasterPosition) -> color_eyre::Result<()> {
   trace!("focusing direction: {:?}", direction);
   if is_dry_mode() {
