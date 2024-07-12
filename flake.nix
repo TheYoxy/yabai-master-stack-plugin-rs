@@ -20,7 +20,7 @@
   }: let
     overlays = [
       rust-overlay.overlays.default
-      (final: prev: {
+      (final: _prev: {
         rustToolchain = final.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
       })
     ];
@@ -33,20 +33,6 @@
       };
     in {
       formatter = pkgs.alejandra;
-
-      devShells = {
-        default = with pkgs;
-          mkShell {
-            buildInputs = [
-              libiconv
-              pkg-config
-              rustToolchain
-              (cargo-watch.override {
-                inherit rustPlatform;
-              })
-            ];
-          };
-      };
 
       packages = let
         inherit (pkgs) lib;
@@ -83,16 +69,17 @@
               echo "Creating completions directory..."
               mkdir completions
               echo "Generating shell completions..."
-              RUST_LOG=trace $out/bin/${package.name} completions bash > completions/${package.name}.bash
-              RUST_LOG=trace $out/bin/${package.name} completions zsh > completions/${package.name}.zsh
-              RUST_LOG=trace $out/bin/${package.name} completions fish > completions/${package.name}.fish
+
+              $out/bin/${package.name} completions bash > completions/${package.name}.bash
+              $out/bin/${package.name} completions zsh > completions/${package.name}.zsh
+              $out/bin/${package.name} completions fish > completions/${package.name}.fish
 
               installShellCompletion completions/*
             '';
 
             doCheck = false;
             meta = {
-              description = package.description;
+              inherit (package) description;
               homepage = package.repository;
               license = lib.licenses.mit;
               mainProgram = package.name;

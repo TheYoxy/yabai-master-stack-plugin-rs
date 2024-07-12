@@ -27,3 +27,7 @@ tracing-subscriber = { version = "0.3", features = [
     "serde",
     "time",
 ] }
+
+[dev-dependencies]
+pretty_assertions = "1.4.0"
+rstest = "0.21.0"

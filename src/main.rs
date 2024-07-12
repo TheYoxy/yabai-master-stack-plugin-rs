@@ -30,9 +30,6 @@ fn main() -> color_eyre::Result<()> {
     return generate_completion(completion);
   }
 
-  #[cfg(debug_assertions)]
-  pretty_env_logger::init();
-  #[cfg(not(debug_assertions))]
   initialize_logging::initialize_logging()?;
 
   check_config_path_exists()?;

@@ -8,6 +8,10 @@ use crate::{
   task::lock::is_locked,
   window_manager::WindowsManager,
   yabai::{
+    command::{
+      display_selector::YabaiDisplaySelector, message::YabaiMessage, to_command::Runnable,
+      window_selector::YabaiWindowSelector,
+    },
     commands::{get_yabai_command, RunCommand},
     config::{MasterPosition, ToYabaiDirection},
     display::Display,
@@ -142,7 +146,8 @@ pub fn focus_window(window: &Window) -> color_eyre::Result<()> {
     warn!("skipping focus window {window}");
     Ok(())
   } else {
-    get_yabai_command()?.args(["-m", "window", "--focus", window.id.to_string().as_str()]).run_command()
+    YabaiMessage::current_window().focus(YabaiWindowSelector::Id(window.id))?.run()?;
+    Ok(())
   }
 }
 
@@ -162,7 +167,8 @@ pub fn move_window_to_display(display: &Display) -> color_eyre::Result<()> {
     warn!("skipping move window to display {display}");
     Ok(())
   } else {
-    get_yabai_command()?.args(["-m", "window", "--display", display.index.to_string().as_str()]).run_command()
+    YabaiMessage::current_window().display(YabaiDisplaySelector::ArrangementIndex(display.index))?.run()?;
+    Ok(())
   }
 }
 
@@ -179,13 +185,14 @@ where
   }
 }
 
-pub fn swap_window_direction(direction: &MasterPosition) -> color_eyre::Result<()> {
+pub fn swap_window_direction<T: Into<YabaiWindowSelector> + std::fmt::Debug>(direction: T) -> color_eyre::Result<()> {
   trace!("focusing direction: {:?}", direction);
   if is_dry_mode() {
     warn!("skipping swap direction {:?}", direction);
     Ok(())
   } else {
-    get_yabai_command()?.args(["-m", "window", "--swap", direction.to_yabai_direction()]).run_command()
+    YabaiMessage::current_window().swap::<YabaiWindowSelector>(direction.into())?.run()?;
+    Ok(())
   }
 }
 

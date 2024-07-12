@@ -1,4 +1,4 @@
-pub(crate) mod events {
+pub mod events {
   use log::trace;
 
   use crate::{
@@ -7,7 +7,7 @@ pub(crate) mod events {
     yabai::{config::get_config, state::StateForSpace},
   };
 
-  pub(crate) fn on_yabai_start(iwm: &mut InitializedWindowsManager) -> color_eyre::Result<()> {
+  pub fn on_yabai_start(iwm: &mut InitializedWindowsManager) -> color_eyre::Result<()> {
     trace!("Handling on yabai start event");
     let wm = &mut iwm.wm;
 
@@ -21,7 +21,7 @@ pub(crate) mod events {
     Ok(())
   }
 
-  pub(crate) fn window_created(iwm: &mut InitializedWindowsManager) -> color_eyre::Result<()> {
+  pub fn window_created(iwm: &mut InitializedWindowsManager) -> color_eyre::Result<()> {
     trace!("Handling window created event");
 
     let wm = &mut iwm.wm;
@@ -255,7 +255,7 @@ pub(crate) mod move_window {
   use log::{info, trace};
 
   use crate::{
-    window_manager::yabai::{focus_direction, move_window_to_display, swap_window_direction},
+    window_manager::yabai::{move_window_to_display, swap_window_direction},
     yabai::{
       config::get_config,
       display::{get_displays, get_focused_display},
@@ -267,7 +267,9 @@ pub(crate) mod move_window {
     let config = get_config()?;
 
     // todo: check if the current window is already in the master position
-    swap_window_direction(&config.master_position)?;
+    // let windows = get_windows()?;
+    // debug!("Windows: {windows:?}");
+    swap_window_direction(config.master_position)?;
 
     Ok(())
   }

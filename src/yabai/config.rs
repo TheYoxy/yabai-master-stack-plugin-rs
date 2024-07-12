@@ -8,7 +8,10 @@ use color_eyre::{
 use log::trace;
 use serde::Deserialize;
 
-use crate::print_bool;
+use crate::{
+  print_bool,
+  yabai::command::{direction_selector::YabaiDirectionSelector, window_selector::YabaiWindowSelector},
+};
 
 #[derive(Debug, Default, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -29,6 +32,18 @@ impl ToYabaiDirection for MasterPosition {
       MasterPosition::Right => "east",
     }
   }
+}
+impl Into<YabaiDirectionSelector> for MasterPosition {
+  fn into(self) -> YabaiDirectionSelector {
+    match self {
+      MasterPosition::Left => YabaiDirectionSelector::West,
+      MasterPosition::Right => YabaiDirectionSelector::East,
+    }
+  }
+}
+
+impl Into<YabaiWindowSelector> for MasterPosition {
+  fn into(self) -> YabaiWindowSelector { YabaiWindowSelector::DirectionSelector(self.into()) }
 }
 
 impl Display for MasterPosition {
@@ -110,7 +125,7 @@ pub fn get_lockfile() -> color_eyre::Result<PathBuf> {
   Ok(lockfile)
 }
 
-pub fn get_config_file() -> color_eyre::Result<PathBuf> {
+fn get_config_file() -> color_eyre::Result<PathBuf> {
   let path = get_config_path()?;
   let config_file_path = path.join("ymsp.config.json");
   Ok(config_file_path)
