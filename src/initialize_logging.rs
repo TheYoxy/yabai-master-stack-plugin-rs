@@ -14,7 +14,11 @@ pub(crate) fn initialize_logging() -> color_eyre::Result<()> {
   if !std::fs::exists(parent)? {
     std::fs::create_dir_all(parent)?;
   }
-  let log_file = std::fs::File::create(log_dir)?;
+  let log_file = if !std::fs::exists(log_dir)? {
+    std::fs::File::create(log_dir)?
+  } else {
+    std::fs::File::options().append(true).open(log_dir)?
+  };
   unsafe {
     std::env::set_var(
       "RUST_LOG",
