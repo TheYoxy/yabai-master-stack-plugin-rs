@@ -16,7 +16,7 @@ pub enum YabaiSpaceSelector {
   /// mouse
   Mouse,
   /// <mission-control index (1-based)>
-  MissionControlIndex(usize),
+  Index(usize),
   /// LABEL
   Label(String),
 }
@@ -29,8 +29,11 @@ impl ToArgument for YabaiSpaceSelector {
       YabaiSpaceSelector::Last => "last".into(),
       YabaiSpaceSelector::Recent => "recent".into(),
       YabaiSpaceSelector::Mouse => "mouse".into(),
-      YabaiSpaceSelector::MissionControlIndex(index) => index.to_string(),
+      YabaiSpaceSelector::Index(index) => index.to_string(),
       YabaiSpaceSelector::Label(label) => label.into(),
     }
   }
+}
+impl From<usize> for YabaiSpaceSelector {
+  fn from(index: usize) -> Self { YabaiSpaceSelector::Index(index) }
 }

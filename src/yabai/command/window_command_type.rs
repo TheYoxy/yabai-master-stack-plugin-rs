@@ -147,99 +147,76 @@ impl ToArgument for YabaiWindowCommandType {
 
 #[cfg(test)]
 mod window_command_type_tests {
-  use color_eyre::eyre::Result;
   use pretty_assertions::assert_eq;
 
   use super::*;
 
   #[test_log::test]
-  fn focus_with_specific_window_selector() -> Result<()> {
-    let mut builder = YabaiMessageBuilder::<YabaiWindowSelector, YabaiWindowCommandType>::default();
-    let message = builder.focus(YabaiWindowSelector::Id(1))?;
+  fn focus_with_specific_window_selector() {
+    let message = YabaiMessage::current_window().focus(YabaiWindowSelector::Id(1)).unwrap();
     assert_eq!(message.message.to_argument(), "window --focus 1");
-    Ok(())
   }
 
   #[test_log::test]
-  fn focus_without_window_selector_defaults_to_selected_window() -> Result<()> {
-    let mut builder = YabaiMessageBuilder::<YabaiWindowSelector, YabaiWindowCommandType>::default();
-    let message = builder.focus(None)?;
+  fn focus_without_window_selector_defaults_to_selected_window() {
+    let message = YabaiMessage::current_window().focus(None).unwrap();
     assert_eq!(message.message.to_argument(), "window --focus");
-    Ok(())
   }
 
   #[test_log::test]
-  fn close_specific_window() -> Result<()> {
-    let mut builder = YabaiMessageBuilder::<YabaiWindowSelector, YabaiWindowCommandType>::default();
-    let message = builder.close(YabaiWindowSelector::Id(123))?;
+  fn close_specific_window() {
+    let message = YabaiMessage::current_window().close(YabaiWindowSelector::Id(123)).unwrap();
     assert_eq!(message.message.to_argument(), "window --close 123");
-    Ok(())
   }
 
   #[test_log::test]
-  fn minimize_and_restore_window() -> Result<()> {
-    let mut builder = YabaiMessageBuilder::<YabaiWindowSelector, YabaiWindowCommandType>::default();
-    let minimize_message = builder.minimize(YabaiWindowSelector::Id(123))?;
+  fn minimize_and_restore_window() {
+    let minimize_message = YabaiMessage::current_window().minimize(YabaiWindowSelector::Id(123)).unwrap();
     assert_eq!(minimize_message.message.to_argument(), "window --minimize 123");
 
-    let deminimize_message = builder.deminimize(YabaiWindowSelector::Id(123))?;
+    let deminimize_message = YabaiMessage::current_window().deminimize(YabaiWindowSelector::Id(123)).unwrap();
     assert_eq!(deminimize_message.message.to_argument(), "window --deminimize 123");
-    Ok(())
   }
 
   #[test_log::test]
-  fn toggle_window_property() -> Result<()> {
-    let mut builder = YabaiMessageBuilder::<YabaiWindowSelector, YabaiWindowCommandType>::default();
-    let message = builder.toggle(YabaiToggleSelector::Float)?;
+  fn toggle_window_property() {
+    let message = YabaiMessage::current_window().toggle(YabaiToggleSelector::Float).unwrap();
     assert_eq!(message.message.to_argument(), "window --toggle float");
-    Ok(())
   }
 
   #[test_log::test]
-  fn send_window_to_display() -> Result<()> {
-    let mut builder = YabaiMessageBuilder::<YabaiWindowSelector, YabaiWindowCommandType>::default();
-    let message = builder.display(YabaiDisplaySelector::Index(2))?;
+  fn send_window_to_display() {
+    let message = YabaiMessage::current_window().display(YabaiDisplaySelector::Index(2)).unwrap();
     assert_eq!(message.message.to_argument(), "window --display 2");
-    Ok(())
   }
 
   #[test_log::test]
-  fn send_window_to_space() -> Result<()> {
-    let mut builder = YabaiMessageBuilder::<YabaiWindowSelector, YabaiWindowCommandType>::default();
-    let message = builder.space(YabaiSpaceSelector::First)?;
+  fn send_window_to_space() {
+    let message = YabaiMessage::current_window().space(YabaiSpaceSelector::First).unwrap();
     assert_eq!(message.message.to_argument(), "window --space first");
-    Ok(())
   }
 
   #[test_log::test]
-  fn swap_windows() -> Result<()> {
-    let mut builder = YabaiMessageBuilder::<YabaiWindowSelector, YabaiWindowCommandType>::default();
-    let message = builder.swap(YabaiWindowSelector::Id(456))?;
+  fn swap_windows() {
+    let message = YabaiMessage::current_window().swap(YabaiWindowSelector::Id(456)).unwrap();
     assert_eq!(message.message.to_argument(), "window --swap 456");
-    Ok(())
   }
 
   #[test_log::test]
-  fn warp_window() -> Result<()> {
-    let mut builder = YabaiMessageBuilder::<YabaiWindowSelector, YabaiWindowCommandType>::default();
-    let message = builder.warp(YabaiWindowSelector::Id(789))?;
+  fn warp_window() {
+    let message = YabaiMessage::current_window().warp(YabaiWindowSelector::Id(789)).unwrap();
     assert_eq!(message.message.to_argument(), "window --warp 789");
-    Ok(())
   }
 
   #[test_log::test]
-  fn stack_windows() -> Result<()> {
-    let mut builder = YabaiMessageBuilder::<YabaiWindowSelector, YabaiWindowCommandType>::default();
-    let message = builder.stack(YabaiWindowSelector::Id(101112))?;
+  fn stack_windows() {
+    let message = YabaiMessage::current_window().stack(YabaiWindowSelector::Id(101112)).unwrap();
     assert_eq!(message.message.to_argument(), "window --stack 101112");
-    Ok(())
   }
 
   #[test_log::test]
-  fn insert_window_in_direction() -> Result<()> {
-    let mut builder = YabaiMessageBuilder::<YabaiWindowSelector, YabaiWindowCommandType>::default();
-    let message = builder.insert(YabaiDirectionSelector::North)?;
+  fn insert_window_in_direction() {
+    let message = YabaiMessage::current_window().insert(YabaiDirectionSelector::North).unwrap();
     assert_eq!(message.message.to_argument(), "window --insert north");
-    Ok(())
   }
 }

@@ -56,3 +56,26 @@ impl ToArgument for YabaiDisplayCommandType {
     }
   }
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_focus() {
+    let message = YabaiMessage::current_display().focus(1).unwrap();
+    assert_eq!(message.message.to_argument(), "display --focus 1");
+  }
+
+  #[test]
+  fn test_space() {
+    let message = YabaiMessage::current_display().space(1).unwrap();
+    assert_eq!(message.message.to_argument(), "display --space 1");
+  }
+
+  #[test]
+  fn test_label() {
+    let message = YabaiMessage::current_display().label("test").unwrap();
+    assert_eq!(message.message.to_argument(), "display --label test");
+  }
+}
