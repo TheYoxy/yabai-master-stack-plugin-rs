@@ -1,9 +1,12 @@
-use color_eyre::eyre::{eyre, Result};
-use tracing_error::ErrorLayer;
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, Layer};
-
 /// Initialize the logging system.
-pub(crate) fn initialize_logging() -> Result<()> {
+#[cfg(debug_assertions)]
+pub(crate) fn initialize_logging() -> color_eyre::Result<()> { pretty_env_logger::try_init().map_err(|e| e.into()) }
+
+#[cfg(not(debug_assertions))]
+pub(crate) fn initialize_logging() -> color_eyre::Result<()> {
+  use color_eyre::eyre::eyre;
+  use tracing_error::ErrorLayer;
+  use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, Layer};
   let home = homedir::my_home()?.ok_or(eyre!("Failed to get home directory"))?;
   let filename = format!("{}.log", env!("CARGO_PKG_NAME"));
   let log_dir = home.join(".local").join("share").join(env!("CARGO_CRATE_NAME")).join("logs").join(filename);
@@ -11,7 +14,11 @@ pub(crate) fn initialize_logging() -> Result<()> {
   if !std::fs::exists(parent)? {
     std::fs::create_dir_all(parent)?;
   }
-  let log_file = std::fs::File::create(log_dir)?;
+  let log_file = if !std::fs::exists(&log_dir)? {
+    std::fs::File::create(&log_dir)?
+  } else {
+    std::fs::File::options().append(true).open(&log_dir)?
+  };
   unsafe {
     std::env::set_var(
       "RUST_LOG",

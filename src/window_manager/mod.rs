@@ -3,13 +3,7 @@ use log::{debug, trace};
 
 use crate::{
   print_bool,
-  window_manager::yabai::{get_yabai_config, YabaiConfig},
-  yabai::{
-    display::Display,
-    spaces::Space,
-    state::{write_state, State, StateForSpace},
-    window::{get_windows, Window},
-  },
+  yabai::{command::message::YabaiMessage, display::Display, spaces::Space, state::State, window::Window},
 };
 
 mod columnize;
@@ -53,7 +47,7 @@ impl WindowsManager {
 
   pub(crate) fn get_windows_data(&self) -> Result<Vec<Window>> {
     debug!("Reading windows data from yabai");
-    let windows = get_windows()?;
+    let windows = YabaiMessage::query().windows()?;
     debug!("Found {len} windows", len = windows.len().blue());
     let windows: Vec<Window> = windows
       .into_iter()
@@ -94,7 +88,7 @@ impl WindowsManager {
     }
     debug!("State validated: {state:?}");
 
-    write_state(state)?;
+    state.write_state()?;
 
     Ok(())
   }
@@ -102,7 +96,7 @@ impl WindowsManager {
   pub(crate) fn get_focused_window(&self) -> Option<&Window> { self.windows.iter().find(|window| window.has_focus) }
 
   pub(crate) fn is_windows_touching_left_edge(&self, window: &Window) -> Result<bool> {
-    let left_padding: f64 = get_yabai_config(YabaiConfig::LeftPadding)?;
+    let left_padding = YabaiMessage::config().left_padding()?;
     trace!(
       "Checking if {window} is touching the left edge {x} {dx}",
       x = window.frame.x.bright_blue(),

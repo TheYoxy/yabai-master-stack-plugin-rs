@@ -3,27 +3,22 @@ use log::trace;
 
 use crate::{
   window_manager::WindowsManager,
-  yabai::{
-    config::initialize_config,
-    display::{get_focused_display, Display},
-    spaces::{get_focused_space, Space},
-    state::{read_state, State, StateForSpace},
-  },
+  yabai::{command::message::YabaiMessage, display::Display, spaces::Space, state::State},
 };
 
-pub(super) struct InitializedWindowsManager {
-  pub(crate) wm: WindowsManager,
-  pub(crate) state: State,
-  pub(crate) display: Display,
-  pub(crate) space: Space,
+pub struct InitializedWindowsManager {
+  pub wm: WindowsManager,
+  pub state: State,
+  pub display: Display,
+  pub space: Space,
 }
 
 pub(super) fn create_initialized_windows_manager() -> color_eyre::Result<InitializedWindowsManager> {
   trace!("Initializing windows manager");
-  let mut state = read_state()?;
-  let display = get_focused_display()?;
+  let mut state = State::read_state()?;
+  let display = YabaiMessage::query().current_display()?;
   trace!("Focused display: {:?}", display);
-  let space = get_focused_space()?;
+  let space = YabaiMessage::query().current_space()?;
   trace!("Focused space: {:?}", space);
   let space_state = state.get_space(&space)?;
   trace!("Space state: {} for {}", space_state.blue(), space.id.blue());

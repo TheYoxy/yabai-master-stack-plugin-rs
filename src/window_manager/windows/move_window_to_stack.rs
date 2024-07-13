@@ -1,8 +1,9 @@
 use log::{debug, info};
 
 use crate::{
-  window_manager::{yabai::YabaiCommand, WindowsManager},
+  window_manager::WindowsManager,
   yabai::{
+    command::{message::YabaiMessage, toggle_selector::YabaiToggleSelector},
     config::get_config,
     window::{SplitType, Window},
   },
@@ -16,11 +17,13 @@ impl WindowsManager {
     } else {
       info!("Moving window {window} to stack");
       let config = get_config()?;
-      self.run_yabai_command(YabaiCommand::WarpDirection(window, &config.master_position))?;
+      let message = YabaiMessage::window(window).warp(config.master_position)?;
+      self.send_yabai_message(message)?;
 
       self.columnize_stack_windows()?;
       if self.windows.len() == 2 && window.split_type == SplitType::Horizontal {
-        self.run_yabai_command(YabaiCommand::ToggleWindowSplit(window))?;
+        let message = YabaiMessage::window(window).toggle(YabaiToggleSelector::Split)?;
+        self.send_yabai_message(message)?;
         info!("Splitting window {window} bc 2 windows and horizontal split type");
         return Ok(());
       }
@@ -37,14 +40,18 @@ impl WindowsManager {
           return Ok(());
         }
 
-        self.run_yabai_command(YabaiCommand::WarpWindow(window, &stack_window))?;
+        let message = YabaiMessage::window(window).warp(stack_window)?;
+        self.send_yabai_message(message)?;
         let window = self.get_updated_window_data(window);
         if let Some(window) = window {
           if self.windows.len() == 2 && window.split_type == SplitType::Horizontal {
             info!("Splitting window {window} bc 2 windows and horizontal split type");
-            self.run_yabai_command(YabaiCommand::ToggleWindowSplit(window))?;
+            let message = YabaiMessage::window(window).toggle(YabaiToggleSelector::Split)?;
+            self.send_yabai_message(message)?;
           } else if window.split_type == SplitType::Vertical {
-            self.run_yabai_command(YabaiCommand::ToggleWindowSplit(window))?;
+            info!("Splitting window {window} bc vertical split type");
+            let message = YabaiMessage::window(window).toggle(YabaiToggleSelector::Split)?;
+            self.send_yabai_message(message)?;
           }
         }
       } else {

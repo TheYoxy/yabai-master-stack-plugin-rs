@@ -5,19 +5,21 @@ use clap_complete::Shell;
 use color_eyre::owo_colors::OwoColorize;
 use log::info;
 
-use crate::{task::{
-  create_initialized_windows_manager::create_initialized_windows_manager,
-  handlers::{
-    events::{on_yabai_start, window_created, window_moved},
-    focus::{focus_down_window, focus_master_window, focus_next_display, focus_previous_display, focus_up_window},
-    move_window::{
-      close_focused_window, move_window_to_master, move_window_to_next_display, move_window_to_previous_display,
+use crate::{
+  task::{
+    handlers::{
+      events::{on_yabai_start, window_created, window_moved},
+      focus::{focus_down_window, focus_master_window, focus_next_display, focus_previous_display, focus_up_window},
+      move_window::{
+        close_focused_window, move_window_to_master, move_window_to_next_display, move_window_to_previous_display,
+      },
+      window_count::{decrease_master_window_count, increase_master_window_count},
     },
-    window_count::{decrease_master_window_count, increase_master_window_count},
+    lock::run_locked_with_state,
+    ymsp_task::YmspTask,
   },
-  lock::run_locked,
-  ymsp_task::YmspTask,
-}, yabai::config::initialize_config};
+  yabai::config::initialize_config,
+};
 
 mod create_initialized_windows_manager;
 pub(crate) mod handlers;
@@ -75,49 +77,14 @@ impl YmspTask for Task {
 
     initialize_config()?;
     match self {
-      Task::OnYabaiStart => {
-        run_locked(|| {
-          let mut state = create_initialized_windows_manager()?;
-          on_yabai_start(&mut state)
-        })
-      },
-      Task::WindowCreated => {
-        run_locked(|| {
-          let mut state = create_initialized_windows_manager()?;
-          window_created(&mut state)
-        })
-      },
-      Task::WindowMoved => {
-        run_locked(|| {
-          let mut state = create_initialized_windows_manager()?;
-          window_moved(&mut state)
-        })
-      },
-      Task::IncreaseMasterWindowCount => {
-        run_locked(|| {
-          let mut state = create_initialized_windows_manager()?;
-          increase_master_window_count(&mut state)
-        })
-      },
-      Task::DecreaseMasterWindowCount => {
-        run_locked(|| {
-          let mut state = create_initialized_windows_manager()?;
-          decrease_master_window_count(&mut state)
-        })
-      },
+      Task::OnYabaiStart => run_locked_with_state(on_yabai_start),
+      Task::WindowCreated => run_locked_with_state(window_created),
+      Task::WindowMoved => run_locked_with_state(window_moved),
+      Task::IncreaseMasterWindowCount => run_locked_with_state(increase_master_window_count),
+      Task::DecreaseMasterWindowCount => run_locked_with_state(decrease_master_window_count),
       Task::FocusMasterWindow => focus_master_window(),
-      Task::FocusUpWindow => {
-        run_locked(|| {
-          let mut state = create_initialized_windows_manager()?;
-          focus_up_window(&mut state)
-        })
-      },
-      Task::FocusDownWindow => {
-        run_locked(|| {
-          let mut state = create_initialized_windows_manager()?;
-          focus_down_window(&mut state)
-        })
-      },
+      Task::FocusUpWindow => run_locked_with_state(focus_up_window),
+      Task::FocusDownWindow => run_locked_with_state(focus_down_window),
       Task::FocusNextDisplay => focus_next_display(),
       Task::FocusPreviousDisplay => focus_previous_display(),
       Task::MoveToMaster => move_window_to_master(),

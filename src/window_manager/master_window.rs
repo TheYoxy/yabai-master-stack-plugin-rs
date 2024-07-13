@@ -1,8 +1,9 @@
 use log::debug;
 
 use crate::{
-  window_manager::{yabai::YabaiCommand, WindowsManager},
+  window_manager::WindowsManager,
   yabai::{
+    command::{message::YabaiMessage, toggle_selector::YabaiToggleSelector},
     config::{get_config, MasterPosition},
     window::{SplitType, Window},
   },
@@ -53,7 +54,8 @@ impl WindowsManager {
     if self.expected_current_num_master_windows < self.windows.len() {
       let config = get_config()?;
 
-      self.run_yabai_command(YabaiCommand::WarpDirection(window, &config.master_position))?;
+      let message = YabaiMessage::window(window).warp(config.master_position)?;
+      self.send_yabai_message(message)?;
     }
 
     if !self.is_master_window(window).is_ok_and(|r| r) {
@@ -63,12 +65,14 @@ impl WindowsManager {
           return Ok(());
         }
 
-        self.run_yabai_command(YabaiCommand::WarpWindow(window, &master_window))?;
+        let message = YabaiMessage::window(window).warp(master_window)?;
+        self.send_yabai_message(message)?;
 
         let window = self.get_updated_window_data(window);
         if let Some(window) = window {
           if window.split_type == SplitType::Vertical {
-            self.run_yabai_command(YabaiCommand::ToggleWindowSplit(window))?;
+            let message = YabaiMessage::window(window).toggle(YabaiToggleSelector::Split)?;
+            self.send_yabai_message(message)?;
           }
         }
 

@@ -2,8 +2,11 @@ use log::{debug, info};
 
 use crate::{
   print_bool,
-  window_manager::{yabai::YabaiCommand, WindowsManager},
-  yabai::window::SplitType,
+  window_manager::WindowsManager,
+  yabai::{
+    command::{message::YabaiMessage, toggle_selector::YabaiToggleSelector},
+    window::SplitType,
+  },
 };
 
 type Result<T> = color_eyre::Result<T>;
@@ -26,7 +29,8 @@ impl WindowsManager {
     info!("Creating stack... ");
     for window in &self.windows.clone() {
       if window.split_type == SplitType::Horizontal {
-        self.run_yabai_command(YabaiCommand::ToggleWindowSplit(window))?;
+        let message = YabaiMessage::window(window).toggle(YabaiToggleSelector::Split)?;
+        self.send_yabai_message(message)?;
       };
     }
 

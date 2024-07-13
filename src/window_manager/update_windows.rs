@@ -2,8 +2,11 @@ use color_eyre::{eyre::bail, owo_colors::OwoColorize};
 use log::{debug, info, trace, warn};
 
 use crate::{
-  window_manager::{layout_visibility::LayoutValidity, yabai::YabaiCommand, WindowsManager},
-  yabai::window::{SplitType, Window},
+  window_manager::{layout_visibility::LayoutValidity, WindowsManager},
+  yabai::{
+    command::{message::YabaiMessage, toggle_selector::YabaiToggleSelector},
+    window::{SplitType, Window},
+  },
 };
 
 impl WindowsManager {
@@ -54,7 +57,8 @@ impl WindowsManager {
         if target_num_master_windows == num_windows {
           for window in &self.windows {
             if window.split_type == SplitType::Vertical {
-              self.run_yabai_command(YabaiCommand::ToggleWindowSplit(window))?;
+              let message = YabaiMessage::window(window).toggle(YabaiToggleSelector::Split)?;
+              self.send_yabai_message(message)?;
             }
           }
         }

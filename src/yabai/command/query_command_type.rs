@@ -1,0 +1,91 @@
+use crate::yabai::{
+  command::{
+    display_selector::YabaiDisplaySelector, message::YabaiMessageBuilder, space_selector::YabaiSpaceSelector,
+    to_argument::ToArgument, to_command::Runnable, window_selector::YabaiWindowSelector,
+  },
+  display::Display,
+  spaces::Space,
+  window::Window,
+};
+
+#[derive(Debug, Clone)]
+pub enum YabaiQueryCommandType {
+  Displays,
+  Display(Option<YabaiDisplaySelector>),
+  Spaces,
+  Space(Option<YabaiSpaceSelector>),
+  Windows,
+  Window(Option<YabaiWindowSelector>),
+}
+
+impl ToArgument for YabaiQueryCommandType {
+  fn to_argument(&self) -> String {
+    match self {
+      YabaiQueryCommandType::Displays => "--displays".into(),
+      YabaiQueryCommandType::Display(Some(selector)) => format!("--displays --display {}", selector.to_argument()),
+      YabaiQueryCommandType::Display(None) => "--displays --display".into(),
+      YabaiQueryCommandType::Spaces => "--spaces".into(),
+      YabaiQueryCommandType::Space(Some(selector)) => format!("--spaces --space {}", selector.to_argument()),
+      YabaiQueryCommandType::Space(None) => "--spaces --space".into(),
+      YabaiQueryCommandType::Windows => "--windows".into(),
+      YabaiQueryCommandType::Window(Some(selector)) => format!("--windows --window {}", selector.to_argument()),
+      YabaiQueryCommandType::Window(None) => "--windows --window".into(),
+    }
+  }
+}
+
+impl YabaiMessageBuilder<(), YabaiQueryCommandType> {
+  pub fn displays(&mut self) -> color_eyre::Result<Vec<Display>> {
+    self.message = Some(YabaiQueryCommandType::Displays);
+    let output = self.build()?.run()?;
+    serde_json::from_slice(&output.stdout).map_err(|e| e.into())
+  }
+
+  pub fn current_display(&mut self) -> color_eyre::Result<Display> {
+    self.message = Some(YabaiQueryCommandType::Display(None));
+    let output = self.build()?.run()?;
+    serde_json::from_slice(&output.stdout).map_err(|e| e.into())
+  }
+
+  pub fn display<T: Into<YabaiDisplaySelector>>(&mut self, display: T) -> color_eyre::Result<Display> {
+    self.message = Some(YabaiQueryCommandType::Display(Some(display.into())));
+    let output = self.build()?.run()?;
+    serde_json::from_slice(&output.stdout).map_err(|e| e.into())
+  }
+
+  pub fn spaces(&mut self) -> color_eyre::Result<Vec<Space>> {
+    self.message = Some(YabaiQueryCommandType::Spaces);
+    let output = self.build()?.run()?;
+    serde_json::from_slice(&output.stdout).map_err(|e| e.into())
+  }
+
+  pub fn current_space(&mut self) -> color_eyre::Result<Space> {
+    self.message = Some(YabaiQueryCommandType::Space(None));
+    let output = self.build()?.run()?;
+    serde_json::from_slice(&output.stdout).map_err(|e| e.into())
+  }
+
+  pub fn space<T: Into<YabaiSpaceSelector>>(&mut self, space: T) -> color_eyre::Result<Space> {
+    self.message = Some(YabaiQueryCommandType::Space(Some(space.into())));
+    let output = self.build()?.run()?;
+    serde_json::from_slice(&output.stdout).map_err(|e| e.into())
+  }
+
+  pub fn windows(&mut self) -> color_eyre::Result<Vec<Window>> {
+    self.message = Some(YabaiQueryCommandType::Windows);
+    let output = self.build()?.run()?;
+    serde_json::from_slice(&output.stdout).map_err(|e| e.into())
+  }
+
+  pub fn current_window(&mut self) -> color_eyre::Result<Window> {
+    self.message = Some(YabaiQueryCommandType::Window(None));
+    let output = self.build()?.run()?;
+    serde_json::from_slice(&output.stdout).map_err(|e| e.into())
+  }
+
+  pub fn window<T: Into<YabaiWindowSelector>>(&mut self, window: T) -> color_eyre::Result<Window> {
+    self.message = Some(YabaiQueryCommandType::Window(Some(window.into())));
+    let output = self.build()?.run()?;
+    serde_json::from_slice(&output.stdout).map_err(|e| e.into())
+  }
+}
