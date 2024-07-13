@@ -1,3 +1,5 @@
+use log::debug;
+
 use crate::yabai::command::{
   config_command_type::YabaiConfigCommandType, display_command_type::YabaiDisplayCommandType,
   display_selector::YabaiDisplaySelector, query_command_type::YabaiQueryCommandType, to_argument::ToArgument,
@@ -13,6 +15,7 @@ pub enum YabaiMessageType {
 }
 impl ToArgument for YabaiMessageType {
   fn to_argument(&self) -> String {
+    debug!("YabaiMessageType::to_argument: {:?}", self);
     match self {
       YabaiMessageType::Window(Some(window), selector) => {
         format!("window {} {}", window.to_argument(), selector.to_argument())
@@ -26,4 +29,11 @@ impl ToArgument for YabaiMessageType {
       YabaiMessageType::Query(query) => format!("query {}", query.to_argument()),
     }
   }
+}
+
+impl From<YabaiQueryCommandType> for YabaiMessageType {
+  fn from(command: YabaiQueryCommandType) -> Self { YabaiMessageType::Query(command) }
+}
+impl From<YabaiConfigCommandType> for YabaiMessageType {
+  fn from(command: YabaiConfigCommandType) -> Self { YabaiMessageType::Config(command) }
 }

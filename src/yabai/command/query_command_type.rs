@@ -1,17 +1,8 @@
-use color_eyre::eyre::OptionExt;
-use log::debug;
-
 use crate::yabai::{
   command::{
-    display_selector::YabaiDisplaySelector,
-    message::{YabaiMessage, YabaiMessageBuilder},
-    message_type::YabaiMessageType,
-    space_selector::YabaiSpaceSelector,
-    to_argument::ToArgument,
-    to_command::Runnable,
-    window_selector::YabaiWindowSelector,
+    display_selector::YabaiDisplaySelector, message::YabaiMessageBuilder, space_selector::YabaiSpaceSelector,
+    to_argument::ToArgument, to_command::Runnable, window_selector::YabaiWindowSelector,
   },
-  config::get_config,
   display::Display,
   spaces::Space,
   window::Window,
@@ -44,15 +35,6 @@ impl ToArgument for YabaiQueryCommandType {
 }
 
 impl YabaiMessageBuilder<(), YabaiQueryCommandType> {
-  /// Build the YabaiMessage from the builder.
-  fn build(&self) -> color_eyre::Result<YabaiMessage> {
-    debug!("creating yabai message for config");
-    let command = get_config().map(|config| config.yabai_path).unwrap_or("yabai".to_string());
-    let message = self.message.as_ref().ok_or_eyre("no command set")?.clone();
-    debug!("command: {}", command);
-    Ok(YabaiMessage { command, message: YabaiMessageType::Query(message) })
-  }
-
   pub fn displays(&mut self) -> color_eyre::Result<Vec<Display>> {
     self.message = Some(YabaiQueryCommandType::Displays);
     let output = self.build()?.run()?;

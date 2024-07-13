@@ -3,13 +3,7 @@ use log::{debug, trace};
 
 use crate::{
   print_bool,
-  yabai::{
-    command::message::YabaiMessage,
-    display::Display,
-    spaces::Space,
-    state::{write_state, State, StateForSpace},
-    window::Window,
-  },
+  yabai::{command::message::YabaiMessage, display::Display, spaces::Space, state::State, window::Window},
 };
 
 mod columnize;
@@ -94,7 +88,7 @@ impl WindowsManager {
     }
     debug!("State validated: {state:?}");
 
-    write_state(state)?;
+    state.write_state()?;
 
     Ok(())
   }

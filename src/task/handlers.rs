@@ -3,8 +3,7 @@ pub mod events {
 
   use crate::{
     task::create_initialized_windows_manager::InitializedWindowsManager,
-    window_manager::layout_visibility::LayoutValidity,
-    yabai::{config::get_config, state::StateForSpace},
+    window_manager::layout_visibility::LayoutValidity, yabai::config::get_config,
   };
 
   pub fn on_yabai_start(iwm: &mut InitializedWindowsManager) -> color_eyre::Result<()> {
@@ -214,10 +213,7 @@ pub(crate) mod window_count {
   use color_eyre::{eyre::bail, owo_colors::OwoColorize};
   use log::{debug, trace};
 
-  use crate::{
-    task::create_initialized_windows_manager::InitializedWindowsManager,
-    yabai::state::{write_state, StateForSpace},
-  };
+  use crate::task::create_initialized_windows_manager::InitializedWindowsManager;
 
   pub(crate) fn increase_master_window_count(iwm: &mut InitializedWindowsManager) -> color_eyre::Result<()> {
     let wm = &mut iwm.wm;
@@ -232,7 +228,7 @@ pub(crate) mod window_count {
       *space_state += 1;
       wm.update_windows(current_state)?;
       trace!("Increased master window count to {}", current_state);
-      write_state(state)
+      state.write_state()
     } else {
       bail!("Cannot increase master window count above or equals to the number of windows in the space")
     }
@@ -248,7 +244,7 @@ pub(crate) mod window_count {
       *space_state -= 1;
       wm.update_windows(*space_state)?;
       trace!("Decreased master window count to {}", *space_state);
-      write_state(state)
+      state.write_state()
     } else {
       bail!("Cannot decrease master window count below 1");
     }

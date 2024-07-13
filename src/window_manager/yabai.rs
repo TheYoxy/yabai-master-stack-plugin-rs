@@ -5,18 +5,19 @@ use crate::{
   dry_mode::is_dry_mode,
   task::lock::is_locked,
   window_manager::WindowsManager,
-  yabai::{
-    command::{message::YabaiMessage, to_command::Runnable},
-    display::Display,
-  },
+  yabai::command::{message::YabaiMessage, to_command::Runnable},
 };
 
 impl WindowsManager {
   pub(crate) fn send_yabai_message(&self, message: YabaiMessage) -> color_eyre::Result<()> {
     match is_locked() {
       Ok(false) => {
-        trace!("Running yabai command: {}", message.blue());
-        message.run()?;
+        if message.is_write() && is_dry_mode() {
+          warn!("Skipping {} as dry mode is enabled", message.blue());
+        } else {
+          trace!("Running yabai command: {}", message.blue());
+          message.run()?;
+        }
         Ok(())
       },
       Ok(true) => {
@@ -29,22 +30,10 @@ impl WindowsManager {
   }
 }
 
-pub fn move_window_to_display(display: &Display) -> color_eyre::Result<()> {
-  trace!("moving current window to display: {display}");
-  if is_dry_mode() {
-    warn!("skipping move window to display {display}");
-    Ok(())
-  } else {
-    YabaiMessage::current_window().display(display)?.run()?;
-    Ok(())
-  }
-}
-
 #[cfg(test)]
 #[cfg(target_os = "macos")]
 mod tests {
   use super::*;
-  use crate::yabai::config::initialize_config;
 
   #[test]
   fn test_get_yabai_config() {

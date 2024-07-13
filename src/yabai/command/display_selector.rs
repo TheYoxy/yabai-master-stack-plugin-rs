@@ -20,9 +20,9 @@ pub enum YabaiDisplaySelector {
   /// mouse
   Mouse,
   /// DIR_SEL
-  DirectionSelector(YabaiDirectionSelector),
+  Direction(YabaiDirectionSelector),
   /// <arrangement index (1-based)>
-  ArrangementIndex(usize),
+  Index(usize),
   /// LABEL
   Label(String),
 }
@@ -35,21 +35,21 @@ impl ToArgument for YabaiDisplaySelector {
       YabaiDisplaySelector::Last => "last".into(),
       YabaiDisplaySelector::Recent => "recent".into(),
       YabaiDisplaySelector::Mouse => "mouse".into(),
-      YabaiDisplaySelector::DirectionSelector(selector) => selector.to_argument(),
-      YabaiDisplaySelector::ArrangementIndex(index) => index.to_string(),
+      YabaiDisplaySelector::Direction(selector) => selector.to_argument(),
+      YabaiDisplaySelector::Index(index) => index.to_string(),
       YabaiDisplaySelector::Label(label) => label.into(),
     }
   }
 }
 impl From<MasterPosition> for YabaiDisplaySelector {
-  fn from(master_position: MasterPosition) -> Self { YabaiDisplaySelector::DirectionSelector(master_position.into()) }
+  fn from(master_position: MasterPosition) -> Self { YabaiDisplaySelector::Direction(master_position.into()) }
 }
 impl From<usize> for YabaiDisplaySelector {
-  fn from(index: usize) -> Self { YabaiDisplaySelector::ArrangementIndex(index) }
+  fn from(index: usize) -> Self { YabaiDisplaySelector::Index(index) }
 }
 impl From<Display> for YabaiDisplaySelector {
-  fn from(value: Display) -> Self { YabaiDisplaySelector::ArrangementIndex(value.id) }
+  fn from(value: Display) -> Self { YabaiDisplaySelector::Index(value.id) }
 }
 impl From<&Display> for YabaiDisplaySelector {
-  fn from(value: &Display) -> Self { YabaiDisplaySelector::ArrangementIndex(value.id) }
+  fn from(value: &Display) -> Self { YabaiDisplaySelector::Index(value.id) }
 }

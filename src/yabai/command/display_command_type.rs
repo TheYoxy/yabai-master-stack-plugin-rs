@@ -23,7 +23,7 @@ impl YabaiMessageBuilder<YabaiDisplaySelector, YabaiDisplayCommandType> {
   fn build(&self) -> color_eyre::Result<YabaiMessage> {
     let command = get_config().map(|config| config.yabai_path).unwrap_or("yabai".to_string());
     let message = self.message.as_ref().ok_or_eyre("no command set")?.clone();
-    Ok(YabaiMessage { command, message: YabaiMessageType::Display(self.selector.clone(), message) })
+    Ok(YabaiMessage { command, message: YabaiMessageType::Display(self.selector.clone(), message), is_write: true })
   }
 
   pub fn focus<T: Into<YabaiDisplaySelector>>(&mut self, selector: T) -> color_eyre::Result<YabaiMessage> {

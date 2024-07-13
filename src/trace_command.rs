@@ -1,7 +1,6 @@
 use std::process::{Command, Output};
 
-use color_eyre::{Help, SectionExt};
-use color_eyre::owo_colors::OwoColorize;
+use color_eyre::{owo_colors::OwoColorize, Help, SectionExt};
 use log::debug;
 use tracing::debug_span;
 

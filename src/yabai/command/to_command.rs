@@ -1,10 +1,11 @@
 use std::fmt::Formatter;
 
 use color_eyre::{eyre::eyre, owo_colors::OwoColorize, Section, SectionExt};
-use log::error;
+use log::{error, trace};
 
 use crate::{
   print_bool,
+  trace_command::ExecTrace,
   yabai::command::{message::YabaiMessage, to_argument::ToArgument},
 };
 
@@ -14,7 +15,6 @@ pub trait Runnable {
 
 impl Runnable for YabaiMessage {
   fn run(&self) -> color_eyre::Result<std::process::Output> {
-    use crate::yabai::commands::ExecTrace;
     let command = self.to_command_str()?;
     let args = command.split(' ').collect::<Vec<_>>();
     let program = args.first().unwrap();
@@ -49,6 +49,7 @@ trait ToCommand {
 
 impl ToCommand for YabaiMessage {
   fn to_command_str(&self) -> color_eyre::Result<String> {
+    trace!("building command string for message: {:?}", self);
     Ok(format!("{} -m {}", self.command, self.message.to_argument()))
   }
 }
@@ -66,14 +67,14 @@ mod tests {
   use super::*;
   use crate::yabai::command::window_selector::YabaiWindowSelector;
 
-  #[test]
+  #[test_log::test]
   fn test_current_window() {
     let message = YabaiMessage::current_window().focus(YabaiWindowSelector::Next).unwrap();
     assert_eq!(message.to_command_str().unwrap(), "yabai -m window --focus next");
   }
 
-  #[test]
-  fn test_id_window() {
+  #[test_log::test]
+  fn test_first_window_focus_next() {
     let message = YabaiMessage::window(YabaiWindowSelector::First).focus(YabaiWindowSelector::Next).unwrap();
     assert_eq!(message.to_command_str().unwrap(), "yabai -m window first --focus next");
   }

@@ -7,9 +7,9 @@ mod initialize_logging;
 mod initialize_panic_handler;
 mod macros;
 mod task;
+mod trace_command;
 pub mod window_manager;
 mod yabai;
-mod trace_command;
 
 fn main() -> color_eyre::Result<()> {
   use clap::Parser as _;

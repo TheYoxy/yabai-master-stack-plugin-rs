@@ -155,18 +155,12 @@ pub fn get_config() -> color_eyre::Result<YabaiMasterStackPluginConfig> {
   }
 }
 
-#[cfg(all(test, target_os = "macos"))]
-pub fn get_config() -> color_eyre::Result<YabaiMasterStackPluginConfig> {
-  let config = _initialize_config()?;
-  Ok(config)
-}
-
-#[cfg(all(test, not(target_os = "macos")))]
+#[cfg(test)]
 pub fn get_config() -> color_eyre::Result<YabaiMasterStackPluginConfig> {
   Ok(YabaiMasterStackPluginConfig {
     debug: true,
     master_position: MasterPosition::Left,
     move_new_windows_to_master: false,
-    yabai_path: "/usr/local/bin/yabai".to_string(),
+    yabai_path: "yabai".to_string(),
   })
 }

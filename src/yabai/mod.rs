@@ -1,5 +1,4 @@
 pub mod command;
-pub mod commands;
 pub mod config;
 pub mod display;
 pub mod frame;

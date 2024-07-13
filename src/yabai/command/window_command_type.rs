@@ -54,7 +54,7 @@ impl YabaiMessageBuilder<YabaiWindowSelector, YabaiWindowCommandType> {
   fn build(&self) -> color_eyre::Result<YabaiMessage> {
     let command = get_config().map(|config| config.yabai_path).unwrap_or("yabai".to_string());
     let message = self.message.as_ref().ok_or_eyre("no command set")?.clone();
-    Ok(YabaiMessage { command, message: YabaiMessageType::Window(self.selector.clone(), message) })
+    Ok(YabaiMessage { command, message: YabaiMessageType::Window(self.selector.clone(), message), is_write: true })
   }
 
   /// Focus the given window.
@@ -117,15 +117,18 @@ impl YabaiMessageBuilder<YabaiWindowSelector, YabaiWindowCommandType> {
 impl ToArgument for YabaiWindowCommandType {
   fn to_argument(&self) -> String {
     match self {
-      YabaiWindowCommandType::Focus(selector) => {
-        format!("--focus {}", selector.as_ref().map(|a| a.to_argument()).unwrap_or_default())
+      YabaiWindowCommandType::Focus(Some(selector)) => {
+        format!("--focus {}", selector.to_argument())
       },
-      YabaiWindowCommandType::Close(selector) => {
-        format!("--close {}", selector.as_ref().map(|a| a.to_argument()).unwrap_or_default())
+      YabaiWindowCommandType::Focus(None) => "--focus".into(),
+      YabaiWindowCommandType::Close(Some(selector)) => {
+        format!("--close {}", selector.to_argument())
       },
-      YabaiWindowCommandType::Minimize(selector) => {
-        format!("--minimize {}", selector.as_ref().map(|a| a.to_argument()).unwrap_or_default())
+      YabaiWindowCommandType::Close(None) => "--close".into(),
+      YabaiWindowCommandType::Minimize(Some(selector)) => {
+        format!("--minimize {}", selector.to_argument())
       },
+      YabaiWindowCommandType::Minimize(None) => "--minimize".into(),
       YabaiWindowCommandType::Deminimize(selector) => format!("--deminimize {}", selector.to_argument()),
       YabaiWindowCommandType::Display(selector) => format!("--display {}", selector.to_argument()),
       YabaiWindowCommandType::Space(selector) => format!("--space {}", selector.to_argument()),
@@ -139,5 +142,104 @@ impl ToArgument for YabaiWindowCommandType {
         format!("--toggle {}", selector.to_argument())
       },
     }
+  }
+}
+
+#[cfg(test)]
+mod window_command_type_tests {
+  use color_eyre::eyre::Result;
+  use pretty_assertions::assert_eq;
+
+  use super::*;
+
+  #[test_log::test]
+  fn focus_with_specific_window_selector() -> Result<()> {
+    let mut builder = YabaiMessageBuilder::<YabaiWindowSelector, YabaiWindowCommandType>::default();
+    let message = builder.focus(YabaiWindowSelector::Id(1))?;
+    assert_eq!(message.message.to_argument(), "window --focus 1");
+    Ok(())
+  }
+
+  #[test_log::test]
+  fn focus_without_window_selector_defaults_to_selected_window() -> Result<()> {
+    let mut builder = YabaiMessageBuilder::<YabaiWindowSelector, YabaiWindowCommandType>::default();
+    let message = builder.focus(None)?;
+    assert_eq!(message.message.to_argument(), "window --focus");
+    Ok(())
+  }
+
+  #[test_log::test]
+  fn close_specific_window() -> Result<()> {
+    let mut builder = YabaiMessageBuilder::<YabaiWindowSelector, YabaiWindowCommandType>::default();
+    let message = builder.close(YabaiWindowSelector::Id(123))?;
+    assert_eq!(message.message.to_argument(), "window --close 123");
+    Ok(())
+  }
+
+  #[test_log::test]
+  fn minimize_and_restore_window() -> Result<()> {
+    let mut builder = YabaiMessageBuilder::<YabaiWindowSelector, YabaiWindowCommandType>::default();
+    let minimize_message = builder.minimize(YabaiWindowSelector::Id(123))?;
+    assert_eq!(minimize_message.message.to_argument(), "window --minimize 123");
+
+    let deminimize_message = builder.deminimize(YabaiWindowSelector::Id(123))?;
+    assert_eq!(deminimize_message.message.to_argument(), "window --deminimize 123");
+    Ok(())
+  }
+
+  #[test_log::test]
+  fn toggle_window_property() -> Result<()> {
+    let mut builder = YabaiMessageBuilder::<YabaiWindowSelector, YabaiWindowCommandType>::default();
+    let message = builder.toggle(YabaiToggleSelector::Float)?;
+    assert_eq!(message.message.to_argument(), "window --toggle float");
+    Ok(())
+  }
+
+  #[test_log::test]
+  fn send_window_to_display() -> Result<()> {
+    let mut builder = YabaiMessageBuilder::<YabaiWindowSelector, YabaiWindowCommandType>::default();
+    let message = builder.display(YabaiDisplaySelector::Index(2))?;
+    assert_eq!(message.message.to_argument(), "window --display 2");
+    Ok(())
+  }
+
+  #[test_log::test]
+  fn send_window_to_space() -> Result<()> {
+    let mut builder = YabaiMessageBuilder::<YabaiWindowSelector, YabaiWindowCommandType>::default();
+    let message = builder.space(YabaiSpaceSelector::First)?;
+    assert_eq!(message.message.to_argument(), "window --space first");
+    Ok(())
+  }
+
+  #[test_log::test]
+  fn swap_windows() -> Result<()> {
+    let mut builder = YabaiMessageBuilder::<YabaiWindowSelector, YabaiWindowCommandType>::default();
+    let message = builder.swap(YabaiWindowSelector::Id(456))?;
+    assert_eq!(message.message.to_argument(), "window --swap 456");
+    Ok(())
+  }
+
+  #[test_log::test]
+  fn warp_window() -> Result<()> {
+    let mut builder = YabaiMessageBuilder::<YabaiWindowSelector, YabaiWindowCommandType>::default();
+    let message = builder.warp(YabaiWindowSelector::Id(789))?;
+    assert_eq!(message.message.to_argument(), "window --warp 789");
+    Ok(())
+  }
+
+  #[test_log::test]
+  fn stack_windows() -> Result<()> {
+    let mut builder = YabaiMessageBuilder::<YabaiWindowSelector, YabaiWindowCommandType>::default();
+    let message = builder.stack(YabaiWindowSelector::Id(101112))?;
+    assert_eq!(message.message.to_argument(), "window --stack 101112");
+    Ok(())
+  }
+
+  #[test_log::test]
+  fn insert_window_in_direction() -> Result<()> {
+    let mut builder = YabaiMessageBuilder::<YabaiWindowSelector, YabaiWindowCommandType>::default();
+    let message = builder.insert(YabaiDirectionSelector::North)?;
+    assert_eq!(message.message.to_argument(), "window --insert north");
+    Ok(())
   }
 }
