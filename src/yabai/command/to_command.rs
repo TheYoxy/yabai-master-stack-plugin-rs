@@ -1,4 +1,6 @@
-use color_eyre::{eyre::eyre, Section, SectionExt};
+use std::fmt::Formatter;
+
+use color_eyre::{eyre::eyre, owo_colors::OwoColorize, Section, SectionExt};
 use log::error;
 
 use crate::{
@@ -46,32 +48,33 @@ trait ToCommand {
 }
 
 impl ToCommand for YabaiMessage {
-  fn to_command_str(&self) -> color_eyre::Result<String> { Ok(format!("yabai -m {}", self.message.to_argument())) }
+  fn to_command_str(&self) -> color_eyre::Result<String> {
+    Ok(format!("{} -m {}", self.command, self.message.to_argument()))
+  }
+}
+
+impl std::fmt::Display for YabaiMessage {
+  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    write!(f, "{} {}", self.command.cyan(), self.message.to_argument().yellow())
+  }
 }
 
 #[cfg(test)]
 mod tests {
+  use pretty_assertions::assert_eq;
+
   use super::*;
   use crate::yabai::command::window_selector::YabaiWindowSelector;
 
   #[test]
   fn test_current_window() {
-    color_eyre::install().unwrap();
-    let message = YabaiMessage::current_window().focus(YabaiWindowSelector::Next);
-    assert!(message.is_ok());
-    let message = message.unwrap();
-    let cmd = {
-      let cmd = message.to_command_str();
-      assert!(cmd.is_ok());
-      cmd.unwrap()
-    };
-    assert_eq!(cmd, "yabai -m window --focus next");
+    let message = YabaiMessage::current_window().focus(YabaiWindowSelector::Next).unwrap();
+    assert_eq!(message.to_command_str().unwrap(), "yabai -m window --focus next");
   }
 
-  // #[test]
-  // #[should_panic]
-  // fn test_id_window() {
-  //   let message = YabaiMessage::window(YabaiWindowSelector::First).focus(YabaiWindowSelector::Next).unwrap();
-  //   assert_str_eq!(message.to_command_str().unwrap(), "yabai -m window first --focus next");
-  // }
+  #[test]
+  fn test_id_window() {
+    let message = YabaiMessage::window(YabaiWindowSelector::First).focus(YabaiWindowSelector::Next).unwrap();
+    assert_eq!(message.to_command_str().unwrap(), "yabai -m window first --focus next");
+  }
 }

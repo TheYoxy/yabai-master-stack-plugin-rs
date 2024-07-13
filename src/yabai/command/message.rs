@@ -1,85 +1,48 @@
-use color_eyre::eyre::OptionExt;
-
-use crate::yabai::{
-  command::{
-    display_selector::YabaiDisplaySelector, message_type::YabaiMessageType, space_selector::YabaiSpaceSelector,
-    window_command_type::YabaiWindowCommandType, window_selector::YabaiWindowSelector,
-  },
-  config::get_config,
+use crate::yabai::command::{
+  config_command_type::YabaiConfigCommandType, display_command_type::YabaiDisplayCommandType,
+  display_selector::YabaiDisplaySelector, message_type::YabaiMessageType, query_command_type::YabaiQueryCommandType,
+  window_command_type::YabaiWindowCommandType, window_selector::YabaiWindowSelector,
 };
 
 #[derive(Debug, Clone)]
 pub struct YabaiMessage {
+  /// The yabai path to use.
   pub(super) command: String,
+  /// The message sent to yabai.
   pub(super) message: YabaiMessageType,
 }
 
 #[derive(Debug, Clone)]
-pub struct YabaiMessageBuilder<T> {
-  window: Option<YabaiWindowSelector>,
-  message: Option<T>,
+pub struct YabaiMessageBuilder<Selector, Message> {
+  pub(super) selector: Option<Selector>,
+  pub(super) message: Option<Message>,
 }
-impl<T> Default for YabaiMessageBuilder<T> {
-  fn default() -> Self { Self { window: None, message: None } }
+impl<Selector, Message> Default for YabaiMessageBuilder<Selector, Message> {
+  fn default() -> Self { Self { selector: None, message: None } }
 }
 
 impl YabaiMessage {
-  pub fn current_window() -> YabaiMessageBuilder<YabaiWindowCommandType> { YabaiMessageBuilder::default() }
+  pub fn query() -> YabaiMessageBuilder<(), YabaiQueryCommandType> { YabaiMessageBuilder::default() }
 
-  pub fn window<T: Into<Option<YabaiWindowSelector>>>(window: T) -> YabaiMessageBuilder<YabaiWindowCommandType> {
-    YabaiMessageBuilder { window: window.into(), ..Default::default() }
-  }
-}
+  pub fn config() -> YabaiMessageBuilder<(), YabaiConfigCommandType> { YabaiMessageBuilder::default() }
 
-impl YabaiMessageBuilder<YabaiWindowCommandType> {
-  pub fn build(&self) -> color_eyre::Result<YabaiMessage> {
-    let command = get_config().map(|config| config.yabai_path).unwrap_or("yabai".to_string());
-    let message = self.message.as_ref().ok_or_eyre("no command set")?.clone();
-    Ok(YabaiMessage { command, message: YabaiMessageType::Window(self.window.clone(), message) })
+  pub fn current_window() -> YabaiMessageBuilder<YabaiWindowSelector, YabaiWindowCommandType> {
+    YabaiMessageBuilder::default()
   }
 
-  pub fn focus<T: Into<Option<YabaiWindowSelector>>>(&mut self, selector: T) -> color_eyre::Result<YabaiMessage> {
-    self.message = Some(YabaiWindowCommandType::Focus(selector.into()));
-    self.build()
+  pub fn window<T: Into<YabaiWindowSelector>>(
+    window: T,
+  ) -> YabaiMessageBuilder<YabaiWindowSelector, YabaiWindowCommandType> {
+    YabaiMessageBuilder { selector: Some(window.into()), ..Default::default() }
   }
 
-  pub fn close<T: Into<Option<YabaiWindowSelector>>>(&mut self, selector: T) -> color_eyre::Result<YabaiMessage> {
-    self.message = Some(YabaiWindowCommandType::Close(selector.into()));
-    self.build()
+  pub fn current_display() -> YabaiMessageBuilder<YabaiDisplaySelector, YabaiDisplayCommandType> {
+    YabaiMessageBuilder::default()
   }
 
-  pub fn minimize<T: Into<Option<YabaiWindowSelector>>>(&mut self, selector: T) -> color_eyre::Result<YabaiMessage> {
-    self.message = Some(YabaiWindowCommandType::Minimize(selector.into()));
-    self.build()
-  }
-
-  pub fn deminimize<T: Into<YabaiWindowSelector>>(&mut self, selector: T) -> color_eyre::Result<YabaiMessage> {
-    self.message = Some(YabaiWindowCommandType::Deminimize(selector.into()));
-    self.build()
-  }
-
-  pub fn display<T: Into<YabaiDisplaySelector>>(&mut self, selector: T) -> color_eyre::Result<YabaiMessage> {
-    self.message = Some(YabaiWindowCommandType::Display(selector.into()));
-    self.build()
-  }
-
-  pub fn space<T: Into<YabaiSpaceSelector>>(&mut self, selector: T) -> color_eyre::Result<YabaiMessage> {
-    self.message = Some(YabaiWindowCommandType::Space(selector.into()));
-    self.build()
-  }
-
-  pub fn swap<T: Into<YabaiWindowSelector>>(&mut self, selector: T) -> color_eyre::Result<YabaiMessage> {
-    self.message = Some(YabaiWindowCommandType::Swap(selector.into()));
-    self.build()
-  }
-
-  pub fn warp<T: Into<YabaiWindowSelector>>(&mut self, selector: T) -> color_eyre::Result<YabaiMessage> {
-    self.message = Some(YabaiWindowCommandType::Warp(selector.into()));
-    self.build()
-  }
-
-  pub fn stack<T: Into<YabaiWindowSelector>>(&mut self, selector: T) -> color_eyre::Result<YabaiMessage> {
-    self.message = Some(YabaiWindowCommandType::Stack(selector.into()));
-    self.build()
+  pub fn display<T: Into<YabaiDisplaySelector>>(
+    display: T,
+  ) -> YabaiMessageBuilder<YabaiDisplaySelector, YabaiDisplayCommandType> {
+    YabaiMessageBuilder { selector: Some(display.into()), ..Default::default() }
   }
 }

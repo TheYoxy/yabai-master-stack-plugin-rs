@@ -3,8 +3,7 @@ use std::collections::HashMap;
 use color_eyre::owo_colors::OwoColorize;
 use log::debug;
 
-use super::spaces::get_spaces;
-use crate::yabai::{config::get_state_path, spaces::Space};
+use crate::yabai::{command::message::YabaiMessage, config::get_state_path, spaces::Space};
 
 pub type State = HashMap<usize, usize>;
 pub trait StateForSpace {
@@ -49,7 +48,7 @@ pub fn read_state() -> color_eyre::Result<State> {
     let file = std::fs::File::open(state_file_path)?;
     let mut state: State = serde_json::from_reader(file)?;
     debug!("Filling spaces in the state");
-    let spaces = get_spaces()?;
+    let spaces = YabaiMessage::query().spaces()?;
     for space in &spaces {
       state.entry(space.id).or_insert(1);
     }
@@ -64,7 +63,7 @@ pub fn read_state() -> color_eyre::Result<State> {
   } else {
     debug!("Creating new state");
     let mut state = State::default();
-    let spaces = get_spaces()?;
+    let spaces = YabaiMessage::query().spaces()?;
     for space in &spaces {
       debug!("Adding space {space_id} to the state", space_id = space.id.blue());
       state.entry(space.id).or_insert(1);

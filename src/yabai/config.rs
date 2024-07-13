@@ -1,5 +1,5 @@
 use core::fmt::Display;
-use std::{fmt::Debug, path::PathBuf, sync::OnceLock};
+use std::{fmt::Debug, path::PathBuf};
 
 use color_eyre::{
   eyre::{bail, eyre},
@@ -8,10 +8,7 @@ use color_eyre::{
 use log::trace;
 use serde::Deserialize;
 
-use crate::{
-  print_bool,
-  yabai::command::{direction_selector::YabaiDirectionSelector, window_selector::YabaiWindowSelector},
-};
+use crate::print_bool;
 
 #[derive(Debug, Default, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -32,18 +29,6 @@ impl ToYabaiDirection for MasterPosition {
       MasterPosition::Right => "east",
     }
   }
-}
-impl Into<YabaiDirectionSelector> for MasterPosition {
-  fn into(self) -> YabaiDirectionSelector {
-    match self {
-      MasterPosition::Left => YabaiDirectionSelector::West,
-      MasterPosition::Right => YabaiDirectionSelector::East,
-    }
-  }
-}
-
-impl Into<YabaiWindowSelector> for MasterPosition {
-  fn into(self) -> YabaiWindowSelector { YabaiWindowSelector::DirectionSelector(self.into()) }
 }
 
 impl Display for MasterPosition {
@@ -131,31 +116,57 @@ fn get_config_file() -> color_eyre::Result<PathBuf> {
   Ok(config_file_path)
 }
 
-static CELL: OnceLock<YabaiMasterStackPluginConfig> = OnceLock::new();
-pub fn initialize_config() -> color_eyre::Result<()> {
+#[cfg(not(test))]
+static CELL: std::sync::OnceLock<YabaiMasterStackPluginConfig> = std::sync::OnceLock::new();
+
+fn _initialize_config() -> color_eyre::Result<YabaiMasterStackPluginConfig> {
   trace!("Reading configuration");
   let config_file_path = get_config_file()?;
   trace!("Looking for file {config_file_path:?}", config_file_path = config_file_path.yellow());
 
   let exists = config_file_path.try_exists()?;
-  let config = if exists {
+  if exists {
     let file = std::fs::File::open(config_file_path)?;
     trace!("Reading configuration file");
     let data: YabaiMasterStackPluginConfig = serde_json::from_reader(file)?;
     trace!("Deserialized configuration: {data}");
-    data
+    Ok(data)
   } else {
     bail!("Configuration file {config_file_path:?} not found")
-  };
+  }
+}
 
+#[cfg(not(test))]
+pub fn initialize_config() -> color_eyre::Result<()> {
+  let config = _initialize_config()?;
   CELL.set(config).map_err(|_| eyre!("Failed to set config"))?;
 
   Ok(())
 }
 
+#[cfg(test)]
+pub fn initialize_config() -> color_eyre::Result<()> { Ok(()) }
+
+#[cfg(not(test))]
 pub fn get_config() -> color_eyre::Result<YabaiMasterStackPluginConfig> {
   match CELL.get() {
     Some(value) => Ok(value.to_owned()),
     None => bail!("Config not set"),
   }
+}
+
+#[cfg(all(test, target_os = "macos"))]
+pub fn get_config() -> color_eyre::Result<YabaiMasterStackPluginConfig> {
+  let config = _initialize_config()?;
+  Ok(config)
+}
+
+#[cfg(all(test, not(target_os = "macos")))]
+pub fn get_config() -> color_eyre::Result<YabaiMasterStackPluginConfig> {
+  Ok(YabaiMasterStackPluginConfig {
+    debug: true,
+    master_position: MasterPosition::Left,
+    move_new_windows_to_master: false,
+    yabai_path: "/usr/local/bin/yabai".to_string(),
+  })
 }

@@ -3,10 +3,7 @@ use std::fmt::{Display, Formatter};
 use color_eyre::owo_colors::OwoColorize;
 use serde::{Deserialize, Serialize};
 
-use crate::yabai::{
-  commands::{get_yabai_command, RunCommand},
-  display::Frame,
-};
+use crate::yabai::frame::Frame;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub enum SplitType {
@@ -55,9 +52,4 @@ pub struct Window {
 
 impl Display for Window {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result { write!(f, "{} [{}]", self.app.blue(), self.id.yellow()) }
-}
-
-pub fn get_windows() -> color_eyre::Result<Vec<Window>> {
-  let output = get_yabai_command()?.args(["-m", "query", "--windows"]).run_command_with_output()?;
-  serde_json::from_slice::<Vec<Window>>(&output.stdout).map_err(|e| e.into())
 }

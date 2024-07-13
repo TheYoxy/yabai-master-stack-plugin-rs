@@ -9,6 +9,7 @@ mod macros;
 mod task;
 pub mod window_manager;
 mod yabai;
+mod trace_command;
 
 fn main() -> color_eyre::Result<()> {
   use clap::Parser as _;

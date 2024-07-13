@@ -1,8 +1,11 @@
 use log::{debug, info};
 
 use crate::{
-  window_manager::{yabai::YabaiCommand, WindowsManager},
-  yabai::window::{SplitType, Window},
+  window_manager::WindowsManager,
+  yabai::{
+    command::{message::YabaiMessage, toggle_selector::YabaiToggleSelector},
+    window::{SplitType, Window},
+  },
 };
 
 type Result<T> = color_eyre::Result<T>;
@@ -13,7 +16,8 @@ impl WindowsManager {
       let window = self.get_updated_window_data(&window);
       if let Some(window) = window {
         if window.split_type == split_type {
-          self.run_yabai_command(YabaiCommand::ToggleWindowSplit(window))?;
+          let message = YabaiMessage::window(window).toggle(YabaiToggleSelector::Split)?;
+          self.send_yabai_message(message)?;
         }
       }
     }

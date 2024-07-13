@@ -87,13 +87,13 @@ pub(crate) mod focus {
 
   use crate::{
     task::create_initialized_windows_manager::InitializedWindowsManager,
-    window_manager::{
-      yabai::{focus_direction, focus_display, YabaiCommand, YabaiDirection},
-      WindowsManager,
-    },
+    window_manager::WindowsManager,
     yabai::{
+      command::{
+        direction_selector::YabaiDirectionSelector, message::YabaiMessage, to_command::Runnable,
+        window_selector::YabaiWindowSelector,
+      },
       config::get_config,
-      display::{get_displays, get_focused_display},
       window::Window,
     },
   };
@@ -101,7 +101,7 @@ pub(crate) mod focus {
   pub(crate) fn focus_master_window() -> color_eyre::Result<()> {
     let config = get_config()?;
 
-    focus_direction(&config.master_position)?;
+    YabaiMessage::current_display().focus(config.master_position)?.run()?;
 
     Ok(())
   }
@@ -110,7 +110,8 @@ pub(crate) mod focus {
   fn _focus_window(wm: &WindowsManager, window_to_focus: Option<Window>) -> color_eyre::Result<()> {
     if let Some(window_to_focus) = window_to_focus {
       debug!("Focusing window {}", window_to_focus);
-      wm.run_yabai_command(YabaiCommand::FocusWindow(&window_to_focus))?;
+      let message = YabaiMessage::current_window().focus(YabaiWindowSelector::Id(window_to_focus.id))?;
+      wm.send_yabai_message(message)?;
       Ok(())
     } else {
       debug!("No window to focus on");
@@ -133,11 +134,13 @@ pub(crate) mod focus {
         _focus_window(wm, window_to_focus)
       } else {
         trace!("Focusing north window");
-        wm.run_yabai_command(YabaiCommand::FocusDirection(YabaiDirection::North))
+        let message = YabaiMessage::current_window().focus(YabaiDirectionSelector::North)?;
+        wm.send_yabai_message(message)
       }
     } else {
       trace!("No focused window, focusing first window");
-      wm.run_yabai_command(YabaiCommand::FocusDirection(YabaiDirection::First))
+      let message = YabaiMessage::current_window().focus(YabaiWindowSelector::First)?;
+      wm.send_yabai_message(message)
     }
   }
 
@@ -156,18 +159,20 @@ pub(crate) mod focus {
         _focus_window(wm, window_to_focus)
       } else {
         trace!("Focusing south window");
-        wm.run_yabai_command(YabaiCommand::FocusDirection(YabaiDirection::South))
+        let message = YabaiMessage::current_window().focus(YabaiDirectionSelector::South)?;
+        wm.send_yabai_message(message)
       }
     } else {
       trace!("No focused window, focusing first window");
-      wm.run_yabai_command(YabaiCommand::FocusDirection(YabaiDirection::First))
+      let message = YabaiMessage::current_window().focus(YabaiWindowSelector::First)?;
+      wm.send_yabai_message(message)
     }
   }
 
   /// Focus the next display
   pub(crate) fn focus_next_display() -> color_eyre::Result<()> {
-    let mut displays = get_displays()?;
-    let focused_display = get_focused_display()?;
+    let mut displays = YabaiMessage::query().displays()?;
+    let focused_display = YabaiMessage::query().current_display()?;
     displays.sort_by(|d1, d2| d1.frame.x.total_cmp(&d2.frame.x));
     trace!("Displays: {displays:?}");
     let focused_display_order_index = displays.iter().position(|display| display.id == focused_display.id);
@@ -175,7 +180,7 @@ pub(crate) mod focus {
       let next_display = displays.get((focused_display_order_index + 1) % displays.len());
       if let Some(next_display) = next_display {
         trace!("Focusing next display: {next_display}");
-        focus_display(next_display)
+        YabaiMessage::current_display().focus(next_display)?.run().map(|_| ())
       } else {
         bail!("Could not find next display in displays: {displays:?}")
       }
@@ -186,8 +191,8 @@ pub(crate) mod focus {
 
   /// Focus the previous display
   pub(crate) fn focus_previous_display() -> color_eyre::Result<()> {
-    let mut displays = get_displays()?;
-    let focused_display = get_focused_display()?;
+    let mut displays = YabaiMessage::query().displays()?;
+    let focused_display = YabaiMessage::query().current_display()?;
     displays.sort_by(|d1, d2| d1.frame.x.total_cmp(&d2.frame.x));
     trace!("Displays: {displays:?}");
     let focused_display_order_index = displays.iter().position(|display| display.id == focused_display.id);
@@ -195,7 +200,7 @@ pub(crate) mod focus {
       let previous_display = displays.get(((focused_display_order_index - 1) + displays.len()) % displays.len());
       if let Some(previous_display) = previous_display {
         trace!("Focusing previous display: {previous_display}");
-        focus_display(previous_display)
+        YabaiMessage::current_display().focus(previous_display)?.run().map(|_| ())
       } else {
         bail!("Could not find previous display in displays: {displays:?}")
       }
@@ -254,12 +259,9 @@ pub(crate) mod move_window {
   use color_eyre::eyre::bail;
   use log::{info, trace};
 
-  use crate::{
-    window_manager::yabai::{move_window_to_display, swap_window_direction},
-    yabai::{
-      config::get_config,
-      display::{get_displays, get_focused_display},
-    },
+  use crate::yabai::{
+    command::{message::YabaiMessage, to_command::Runnable},
+    config::get_config,
   };
 
   pub(crate) fn move_window_to_master() -> color_eyre::Result<()> {
@@ -269,14 +271,15 @@ pub(crate) mod move_window {
     // todo: check if the current window is already in the master position
     // let windows = get_windows()?;
     // debug!("Windows: {windows:?}");
-    swap_window_direction(config.master_position)?;
+    let message = YabaiMessage::current_window().swap(config.master_position)?;
+    message.run()?;
 
     Ok(())
   }
 
   pub(crate) fn move_window_to_next_display() -> color_eyre::Result<()> {
-    let mut displays = get_displays()?;
-    let focused_display = get_focused_display()?;
+    let mut displays = YabaiMessage::query().displays()?;
+    let focused_display = YabaiMessage::query().current_display()?;
     displays.sort_by(|d1, d2| d1.frame.x.total_cmp(&d2.frame.x));
     trace!("Displays: {displays:?}");
     let focused_display_order_index = displays.iter().position(|display| display.id == focused_display.id);
@@ -284,7 +287,7 @@ pub(crate) mod move_window {
       let next_display = displays.get((focused_display_order_index + 1) % displays.len());
       if let Some(next_display) = next_display {
         trace!("Moving window to next display: {next_display}");
-        move_window_to_display(next_display)
+        YabaiMessage::current_window().display(next_display)?.run().map(|_| ())
       } else {
         bail!("Could not find next display in displays: {displays:?}")
       }
@@ -293,8 +296,8 @@ pub(crate) mod move_window {
     }
   }
   pub(crate) fn move_window_to_previous_display() -> color_eyre::Result<()> {
-    let mut displays = get_displays()?;
-    let focused_display = get_focused_display()?;
+    let mut displays = YabaiMessage::query().displays()?;
+    let focused_display = YabaiMessage::query().current_display()?;
     displays.sort_by(|d1, d2| d1.frame.x.total_cmp(&d2.frame.x));
     trace!("Displays: {displays:?}");
     let focused_display_order_index = displays.iter().position(|display| display.id == focused_display.id);
@@ -302,7 +305,7 @@ pub(crate) mod move_window {
       let previous_display = displays.get(((focused_display_order_index - 1) + displays.len()) % displays.len());
       if let Some(previous_display) = previous_display {
         trace!("Moving window to previous display: {previous_display}");
-        move_window_to_display(previous_display)
+        YabaiMessage::current_window().display(previous_display)?.run().map(|_| ())
       } else {
         bail!("Could not find previous display in displays: {displays:?}")
       }
