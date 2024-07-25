@@ -1,8 +1,7 @@
 {
   description = "";
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
-    flake-utils.url = "github:numtide/flake-utils";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
       inputs = {
@@ -14,84 +13,41 @@
   outputs = {
     self,
     nixpkgs,
-    flake-utils,
     rust-overlay,
     ...
   }: let
+    systems = [
+      "x86_64-linux"
+      "aarch64-linux"
+      "x86_64-darwin"
+      "aarch64-darwin"
+    ];
+    forAllSystems = nixpkgs.lib.genAttrs systems;
     overlays = [
       rust-overlay.overlays.default
       (final: _prev: {
         rustToolchain = final.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
       })
     ];
-  in
-    flake-utils.lib.eachDefaultSystem (system: let
+  in {
+    formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.alejandra);
+
+    packages = forAllSystems (system: let
       pkgs = import nixpkgs {inherit system overlays;};
       rustPlatform = pkgs.makeRustPlatform {
         cargo = pkgs.rustToolchain;
         rustc = pkgs.rustToolchain;
       };
+      rev = self.shortRev or self.dirtyShortRev or "dirty";
     in {
-      formatter = pkgs.alejandra;
-
-      packages = let
-        inherit (pkgs) lib;
-        inherit (lib.importTOML ./Cargo.toml) package;
-        rev = self.shortRev or self.dirtyShortRev or "dirty";
-      in rec {
-        ymsp =
-          rustPlatform
-          .buildRustPackage {
-            pname = package.name;
-            version = "${package.version}-${rev}";
-            src = lib.fileset.toSource {
-              root = ./.;
-              fileset =
-                lib.fileset.intersection
-                (lib.fileset.fromSource (lib.sources.cleanSource ./.))
-                (lib.fileset.unions [
-                  ./src
-                  ./Cargo.toml
-                  ./Cargo.lock
-                ]);
-            };
-
-            cargoLock.lockFile = ./Cargo.lock;
-
-            strictDeps = true;
-
-            nativeBuildInputs = with pkgs; [
-              installShellFiles
-              makeBinaryWrapper
-            ];
-
-            preFixup = ''
-              echo "Creating completions directory..."
-              mkdir completions
-              echo "Generating shell completions..."
-
-              $out/bin/${package.name} completions bash > completions/${package.name}.bash
-              $out/bin/${package.name} completions zsh > completions/${package.name}.zsh
-              $out/bin/${package.name} completions fish > completions/${package.name}.fish
-
-              installShellCompletion completions/*
-            '';
-
-            doCheck = false;
-            meta = {
-              inherit (package) description;
-              homepage = package.repository;
-              license = lib.licenses.mit;
-              mainProgram = package.name;
-              maintainers = [
-                {
-                  name = "TheYoxy";
-                  email = "floryansimar@gmail.com";
-                }
-              ];
-            };
-          };
-        default = ymsp;
+      ymsp = pkgs.callPackage ./packages.nix {
+        inherit rev rustPlatform;
       };
+      default = self.packages.${system}.ymsp;
     });
+
+    checks = forAllSystems (system: {
+      inherit (self.packages.${system}) ymsp;
+    });
+  };
 }
